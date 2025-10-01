@@ -26,30 +26,42 @@
 	font-display: swap;
 }
 
+:root {
+	--text-shadow-retro: 3px 3px 0 #000, -1.5px -1.5px 0 #000, 0 -1.5px 0 #000,
+		1.5px -1.5px 0 #000, 1.5px 0 0 #000, 1.5px 1.5px 0 #000, 0 1.5px 0 #000,
+		-1.5px 1.5px 0 #000, -1.5px 0 0 #000;
+	--text-shadow-retro-sm: 2px 2px 0 #000, -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000,
+		1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
+}
+
 @layer utilities {
 	.text-shadow {
-		text-shadow:
-			3px 3px 0 #000,
-			-1.5px -1.5px 0 #000,
-			0 -1.5px 0 #000,
-			1.5px -1.5px 0 #000,
-			1.5px 0 0 #000,
-			1.5px 1.5px 0 #000,
-			0 1.5px 0 #000,
-			-1.5px 1.5px 0 #000,
-			-1.5px 0 0 #000;
+		text-shadow: var(--text-shadow-retro);
 	}
 
 	.text-shadow-sm {
-		text-shadow:
-			2px 2px 0 #000,
-			-1px -1px 0 #000,
-			0 -1px 0 #000,
-			1px -1px 0 #000,
-			1px 0 0 #000,
-			1px 1px 0 #000,
-			0 1px 0 #000,
-			-1px 1px 0 #000,
-			-1px 0 0 #000;
+		text-shadow: var(--text-shadow-retro-sm);
+	}
+}
+
+@layer components {
+	.font-star {
+		font-family: 'Star4000', monospace;
+		text-shadow: var(--text-shadow-retro);
+	}
+
+	.font-star-small {
+		font-family: 'Star4000Small', monospace;
+		text-shadow: var(--text-shadow-retro-sm);
+	}
+
+	.font-star-large {
+		font-family: 'Star4000Large', monospace;
+		text-shadow: var(--text-shadow-retro);
+	}
+
+	.font-star-extended {
+		font-family: 'Star4000Extended', monospace;
+		text-shadow: var(--text-shadow-retro);
 	}
 }
