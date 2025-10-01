@@ -1,3 +1,55 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@font-face {
+	font-family: 'Star4000';
+	src: url('/fonts/Star4000.woff') format('woff');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Star4000Small';
+	src: url('/fonts/Star4000Small.woff') format('woff');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Star4000Large';
+	src: url('/fonts/Star4000Large.woff') format('woff');
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Star4000Extended';
+	src: url('/fonts/Star4000Extended.woff') format('woff');
+	font-display: swap;
+}
+
+@layer utilities {
+	.text-shadow {
+		text-shadow:
+			3px 3px 0 #000,
+			-1.5px -1.5px 0 #000,
+			0 -1.5px 0 #000,
+			1.5px -1.5px 0 #000,
+			1.5px 0 0 #000,
+			1.5px 1.5px 0 #000,
+			0 1.5px 0 #000,
+			-1.5px 1.5px 0 #000,
+			-1.5px 0 0 #000;
+	}
+
+	.text-shadow-sm {
+		text-shadow:
+			2px 2px 0 #000,
+			-1px -1px 0 #000,
+			0 -1px 0 #000,
+			1px -1px 0 #000,
+			1px 0 0 #000,
+			1px 1px 0 #000,
+			0 1px 0 #000,
+			-1px 1px 0 #000,
+			-1px 0 0 #000;
+	}
+}

@@ -75,12 +75,41 @@ retro-weather/
 - SvelteKit uses file-based routing in `src/routes/`
 - Static assets go in the `static/` directory
 
+## Git Commit Guidelines
+
+**Always use Conventional Commits format:**
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Code style/formatting (no logic change)
+- `refactor`: Code refactoring
+- `perf`: Performance improvement
+- `test`: Adding/updating tests
+- `chore`: Maintenance tasks, dependencies
+
+**Examples:**
+- `feat(weather): add 5-day forecast display`
+- `fix(ui): correct temperature unit toggle`
+- `docs: update README with API usage`
+- `test(weather): add unit tests for data fetching`
+
 ## Before Committing
 
 1. Run `npm run format` to format code
 2. Run `npm run lint` to check for linting issues
 3. Run `npm run check` to type-check
 4. Run `npm run test` to ensure all tests pass
+5. Write a conventional commit message
 
 ## Helpful Resources
 
