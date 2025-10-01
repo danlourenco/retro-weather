@@ -56,6 +56,32 @@ retro-weather/
 - Create Storybook stories for UI components in `src/stories/`
 - Use TypeScript for component props
 
+### Storybook Stories
+- Use `@storybook/addon-svelte-csf` for writing stories
+- When using `defineMeta({ component: MyComponent })`, the `<Story>` component automatically renders `MyComponent`
+- **Do NOT** wrap Story content in the component again - it's redundant
+- Pass children directly within `<Story>` tags; they're automatically passed to the component
+- Example:
+  ```svelte
+  <script module>
+    const { Story } = defineMeta({
+      component: WeatherPanel
+    });
+  </script>
+
+  <!-- ✅ Correct -->
+  <Story name="Default">
+    <div>Content here</div>
+  </Story>
+
+  <!-- ❌ Wrong - redundant wrapper -->
+  <Story name="Default">
+    <WeatherPanel>
+      <div>Content here</div>
+    </WeatherPanel>
+  </Story>
+  ```
+
 ### Styling
 - Use Tailwind CSS utility classes
 - Follow mobile-first responsive design

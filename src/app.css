@@ -2,6 +2,26 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+:root {
+	--text-shadow-retro:
+		3px 3px 0 #000, -1.5px -1.5px 0 #000, 0 -1.5px 0 #000, 1.5px -1.5px 0 #000, 1.5px 0 0 #000,
+		1.5px 1.5px 0 #000, 0 1.5px 0 #000, -1.5px 1.5px 0 #000, -1.5px 0 0 #000;
+	--text-shadow-retro-sm:
+		2px 2px 0 #000, -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000,
+		0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
+
+	--color-midnight-blue: #21285a;
+}
+
+@theme {
+	--shadow-inset: inset 0 0 10px 20px rgba(38, 81, 177, 0.5);
+	--color-panel: var(--color-midnight-blue);
+	--font-family-star: 'Star4000', monospace;
+	--font-family-star-small: 'Star4000Small', monospace;
+	--font-family-star-large: 'Star4000Large', monospace;
+	--font-family-star-extended: 'Star4000Extended', monospace;
+}
+
 @font-face {
 	font-family: 'Star4000';
 	src: url('/fonts/Star4000.woff') format('woff');
@@ -24,14 +44,6 @@
 	font-family: 'Star4000Extended';
 	src: url('/fonts/Star4000Extended.woff') format('woff');
 	font-display: swap;
-}
-
-:root {
-	--text-shadow-retro: 3px 3px 0 #000, -1.5px -1.5px 0 #000, 0 -1.5px 0 #000,
-		1.5px -1.5px 0 #000, 1.5px 0 0 #000, 1.5px 1.5px 0 #000, 0 1.5px 0 #000,
-		-1.5px 1.5px 0 #000, -1.5px 0 0 #000;
-	--text-shadow-retro-sm: 2px 2px 0 #000, -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000,
-		1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000;
 }
 
 @layer utilities {
@@ -64,4 +76,25 @@
 		font-family: 'Star4000Extended', monospace;
 		text-shadow: var(--text-shadow-retro);
 	}
+}
+
+/* Scanline effect for a retro look */
+.weatherstar-scanlines {
+	position: relative;
+}
+
+.weatherstar-scanlines::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		180deg,
+		transparent 0px,
+		transparent 2px,
+		rgba(0, 0, 0, 0.15) 2px,
+		rgba(0, 0, 0, 0.15) 3px
+	);
+	pointer-events: none;
+	z-index: 9999; /* Ensure it's on top */
+	mix-blend-mode: multiply; /* Better blending with content */
 }
