@@ -55,12 +55,27 @@
 @layer utilities {
 	@layer utilities {
 		.clip-angled-right {
+			/* Default: offset from container right edge */
+			--clip-offset-top: 100px;
+			--clip-offset-bottom: 160px;
+
 			clip-path: polygon(
 				0 0,
-				calc(100% - 190px) 0,
-				/* Top point: closer to right edge */ calc(100% - 250px) 100%,
-				/* Bottom point: further from right edge */ 0 100%
+				calc(100% - var(--clip-offset-top)) 0,
+				calc(100% - var(--clip-offset-bottom)) 100%,
+				0 100%
 			);
+
+			/* Responsive adjustments based on container width 
+			@container (max-width: 640px) {
+				--clip-offset-top: 180px;
+				--clip-offset-bottom: 240px;
+			}
+
+			@container (min-width: 641px) and (max-width: 768px) {
+				--clip-offset-top: 220px;
+				--clip-offset-bottom: 280px;
+			} */
 		}
 	}
 

@@ -52,7 +52,7 @@
 			</div>
 
 			<!-- Page Title -->
-			<div class="text-title-yellow text-shadow font-[Star4000] text-3xl sm:text-4xl">
+			<div class="text-shadow font-[Star4000] text-3xl text-[#ff0] sm:text-4xl">
 				{pageTitle}
 			</div>
 
@@ -61,10 +61,10 @@
 
 			<!-- Date/Time -->
 			<div
-				class="text-shadow ml-auto flex flex-shrink-0 flex-col items-end font-[Star4000Small] text-2xl text-white sm:text-3xl md:text-4xl"
+				class="text-shadow ml-auto flex flex-shrink-0 flex-col items-end font-[Star4000Small] text-2xl text-white sm:text-2xl md:text-3xl"
 			>
-				<div class="leading-tight">{currentTime}</div>
-				<div class="text-xl sm:text-2xl md:text-3xl">{currentDate.toUpperCase()}</div>
+				<div class="leading-none">{currentTime}</div>
+				<div class="-mt-1 text-xl sm:text-2xl md:text-3xl">{currentDate.toUpperCase()}</div>
 			</div>
 		</div>
 	</header>
