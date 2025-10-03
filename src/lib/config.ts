@@ -8,8 +8,8 @@ export const NWS_USER_AGENT = 'retro-weather/0.1 (+https://github.com/danlourenc
 
 // Default retry policy used by fetchWithRetry callers (tunable per call)
 export const DEFAULT_RETRY = {
-  maxRetries: dev ? 1 : 2,
-  baseDelayMs: 500,
-  maxDelayMs: 4000,
-  timeoutMs: 15000
+	maxRetries: dev ? 1 : 2,
+	baseDelayMs: 500,
+	maxDelayMs: 4000,
+	timeoutMs: 15000
 };
