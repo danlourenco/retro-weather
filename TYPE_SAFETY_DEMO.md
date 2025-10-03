@@ -11,6 +11,7 @@ This demo showcases the complete type-safe architecture using OpenAPI → Zod �
 ## 🏗️ Architecture Overview
 
 ### Data Flow Pipeline
+
 ```
 NWS OpenAPI Spec → Generated Types & Zod Schemas → DTO Validation → Domain Mapping → Type-Safe UI
 ```
@@ -18,7 +19,7 @@ NWS OpenAPI Spec → Generated Types & Zod Schemas → DTO Validation → Domain
 ### Key Components
 
 - **`src/lib/generated/nws.ts`** - Auto-generated from OpenAPI spec (`npm run generate:nws`)
-- **`src/lib/validators/nws.ts`** - Zod schemas for runtime validation  
+- **`src/lib/validators/nws.ts`** - Zod schemas for runtime validation
 - **`src/lib/types/domain.ts`** - Clean internal domain models
 - **`src/lib/mappers/nws.ts`** - DTO → Domain converters
 - **`src/lib/services/nws.ts`** - Type-safe API client with retry logic
@@ -30,7 +31,7 @@ NWS OpenAPI Spec → Generated Types & Zod Schemas → DTO Validation → Domain
 ✅ **Clean Architecture**: DTOs never leak into UI components  
 ✅ **Error Resilience**: Proper retry logic and typed error handling  
 ✅ **Testability**: Pure mapper functions with comprehensive tests  
-✅ **Maintainability**: Generated types stay in sync with API changes  
+✅ **Maintainability**: Generated types stay in sync with API changes
 
 ## 🧪 Testing
 
