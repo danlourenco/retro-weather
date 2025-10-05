@@ -3,7 +3,9 @@
 </script>
 
 <div
-	class="text-shadow flex h-[80px] flex-row justify-start border-t-2 border-t-gray-300 bg-ticker px-12 py-4 align-middle font-[Star4000] text-4xl text-white"
+	class="text-shadow sticky bottom-0 flex h-[80px] w-full flex-row justify-center border-t-2 border-t-gray-300 bg-ticker font-[Star4000] text-4xl text-white"
 >
-	{@render children()}
+	<div class="mx-auto flex w-full max-w-[968px] flex-row items-center justify-start px-12 py-4">
+		{@render children()}
+	</div>
 </div>

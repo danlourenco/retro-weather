@@ -7,7 +7,7 @@ import type { LocationInfo } from '$lib/types/domain';
 export const load: LayoutServerLoad = async ({
 	params,
 	setHeaders
-}): Promise<LoaderResult<{ location: LocationInfo; coords: string }>> => {
+}): Promise<LoaderResult<{ location: LocationInfo; coords: string; pageTitle?: string }>> => {
 	// Validate coordinates format
 	const coords = params.coords?.split(',');
 	if (!coords || coords.length !== 2) {

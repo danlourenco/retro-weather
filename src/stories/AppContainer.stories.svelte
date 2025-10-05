@@ -28,3 +28,21 @@
 		<AppTicker>Light rain starting in 15 minutes</AppTicker>
 	</AppContainer>
 </Story>
+
+<Story name="Responsive Layout Test">
+	<div class="min-h-screen w-full bg-blue-900">
+		<AppContainer scanlinesEnabled={true}>
+			<AppHeader pageTitle="Local Forecast" />
+			<WeatherPanelContainer>
+				<WeatherPanel>
+					<div class="flex h-full flex-col justify-center space-y-4 text-left">
+						<div class="text-6xl">THIS AFTERNOON...SUNNY, WITH A</div>
+						<div class="text-6xl">HIGH NEAR 71. SOUTHWEST WIND</div>
+						<div class="text-6xl">AROUND 6 MPH.</div>
+					</div>
+				</WeatherPanel>
+			</WeatherPanelContainer>
+			<AppTicker>Conditions at Norwood</AppTicker>
+		</AppContainer>
+	</div>
+</Story>

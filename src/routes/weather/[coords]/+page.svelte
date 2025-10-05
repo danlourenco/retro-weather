@@ -1,72 +1,45 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { WeatherNavigation } from '$lib/services/navigation';
 
 	let { data }: { data: PageData } = $props();
 
 	const coords = data.data?.coords || '';
 </script>
 
-<div class="space-y-6">
-	<div class="rounded-lg bg-white/10 p-6 text-white backdrop-blur-sm">
-		<h2 class="mb-4 text-xl font-bold">Weather Overview</h2>
-		<p class="mb-4">Select a weather view:</p>
+<svelte:head>
+	<title>Weather Menu - Retro Weather Channel</title>
+</svelte:head>
 
-		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			<button
-				class="rounded-lg bg-blue-500/80 p-4 transition-colors hover:bg-blue-600/80"
-				onclick={() => WeatherNavigation.goToCurrentConditions(coords)}
-			>
-				<h3 class="font-semibold">Current Conditions</h3>
-				<p class="text-sm text-blue-100">Latest observations</p>
-			</button>
+<div class="flex h-full flex-col items-center justify-center space-y-8 p-8 text-center">
+	<p class="text-2xl text-blue-200">Select a weather view:</p>
 
-			<button
-				class="rounded-lg bg-green-500/80 p-4 transition-colors hover:bg-green-600/80"
-				onclick={() => WeatherNavigation.goToLocalForecast(coords)}
-			>
-				<h3 class="font-semibold">Local Forecast</h3>
-				<p class="text-sm text-green-100">7-day outlook</p>
-			</button>
+	<div class="grid w-full max-w-2xl gap-6">
+		<a
+			href="/weather/{coords}/current-conditions"
+			class="rounded-lg bg-blue-700/60 p-6 transition-all hover:bg-blue-600/80 hover:scale-105"
+		>
+			<h3 class="mb-2 text-2xl font-bold text-yellow-300">CURRENT CONDITIONS</h3>
+			<p class="text-blue-100">Latest weather observations</p>
+		</a>
 
-			<button
-				class="rounded-lg bg-orange-500/80 p-4 transition-colors hover:bg-orange-600/80"
-				onclick={() => WeatherNavigation.goToHazards(coords)}
-			>
-				<h3 class="font-semibold">Weather Hazards</h3>
-				<p class="text-sm text-orange-100">Alerts & warnings</p>
-			</button>
+		<button
+			disabled
+			class="rounded-lg bg-gray-700/40 p-6 opacity-50 cursor-not-allowed"
+		>
+			<h3 class="mb-2 text-2xl font-bold text-gray-400">LOCAL FORECAST</h3>
+			<p class="text-gray-300">Coming soon</p>
+		</button>
 
-			<button
-				class="rounded-lg bg-purple-500/80 p-4 transition-colors hover:bg-purple-600/80"
-				onclick={() => WeatherNavigation.goToExtendedForecast(coords)}
-			>
-				<h3 class="font-semibold">Extended Forecast</h3>
-				<p class="text-sm text-purple-100">14-day outlook</p>
-			</button>
-		</div>
+		<button
+			disabled
+			class="rounded-lg bg-gray-700/40 p-6 opacity-50 cursor-not-allowed"
+		>
+			<h3 class="mb-2 text-2xl font-bold text-gray-400">WEATHER HAZARDS</h3>
+			<p class="text-gray-300">Coming soon</p>
+		</button>
 	</div>
 
-	{#if data.data?.location}
-		<div class="rounded-lg bg-white/10 p-6 text-white backdrop-blur-sm">
-			<h3 class="mb-2 text-lg font-semibold">Location Information</h3>
-			<div class="space-y-1 text-sm">
-				<p><strong>Grid ID:</strong> {data.data.location.gridId}</p>
-				<p><strong>Grid Point:</strong> ({data.data.location.gridX}, {data.data.location.gridY})</p>
-				<p>
-					<strong>Forecast URL:</strong>
-					<a href={data.data.location.forecast} class="text-blue-300 underline hover:text-blue-200"
-						>View</a
-					>
-				</p>
-				<p>
-					<strong>Stations URL:</strong>
-					<a
-						href={data.data.location.observationStations}
-						class="text-blue-300 underline hover:text-blue-200">View</a
-					>
-				</p>
-			</div>
-		</div>
-	{/if}
+	<div class="text-sm text-blue-300">
+		<a href="/" class="underline hover:text-yellow-300">← Back to Home</a>
+	</div>
 </div>

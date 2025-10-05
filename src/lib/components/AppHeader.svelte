@@ -37,15 +37,14 @@
 	});
 </script>
 
-<div class="bg-header">
-	<header class="relative mt-8 h-18 w-full text-white">
-		<!-- Clipped gradient background layer -->
-		<div class="clip-angled-right bg-twilight-gradient absolute inset-0"></div>
+<div class="bg-header w-full">
+	<div class="relative mx-auto w-full max-w-[968px]">
+		<header class="relative mt-8 h-18 w-full text-white">
+			<!-- Clipped gradient background layer - positioned to break out to viewport edges -->
+			<div class="header-gradient bg-twilight-gradient absolute" style="top: 0; bottom: 0; left: 50%; right: 0; width: 100vw; margin-left: -50vw;"></div>
 
-		<!-- Content layer -->
-		<div
-			class="relative z-10 container mx-auto flex h-full flex-row items-center justify-between gap-x-12 px-8"
-		>
+			<!-- Content layer -->
+			<div class="relative z-10 flex h-full w-full flex-row items-center justify-between gap-x-12 px-8 md:px-16">
 			<!-- Logo -->
 			<div class="w-fit flex-shrink-0">
 				<img src="/images/custom-logo.svg" alt="Weatherstar" />
@@ -68,4 +67,5 @@
 			</div>
 		</div>
 	</header>
+	</div>
 </div>

@@ -77,6 +77,18 @@
 				--clip-offset-bottom: 280px;
 			} */
 		}
+
+		.header-gradient {
+			/* Below 968px: clip-path relative to viewport width */
+			clip-path: polygon(0 0, calc(100vw - 100px) 0, calc(100vw - 160px) 100%, 0 100%);
+		}
+
+		/* Above 968px: clip-path relative to centered content position */
+		@media (min-width: 968px) {
+			.header-gradient {
+				clip-path: polygon(0 0, calc(50vw + 484px - 100px) 0, calc(50vw + 484px - 160px) 100%, 0 100%);
+			}
+		}
 	}
 
 	.text-shadow {

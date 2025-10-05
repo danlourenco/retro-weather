@@ -7,6 +7,7 @@ interface CurrentConditionsData {
 	station: Station | null;
 	observation: Observation | null;
 	coords: string;
+	pageTitle: string;
 }
 
 export const load: PageServerLoad = async ({
@@ -36,7 +37,8 @@ export const load: PageServerLoad = async ({
 				data: {
 					station: null,
 					observation: null,
-					coords
+					coords,
+					pageTitle: 'CURRENT CONDITIONS'
 				}
 			};
 		}
@@ -51,7 +53,8 @@ export const load: PageServerLoad = async ({
 				data: {
 					station,
 					observation,
-					coords
+					coords,
+					pageTitle: 'CURRENT CONDITIONS'
 				}
 			};
 		} catch (obsError) {
@@ -62,7 +65,8 @@ export const load: PageServerLoad = async ({
 				data: {
 					station,
 					observation: null,
-					coords
+					coords,
+					pageTitle: 'CURRENT CONDITIONS'
 				}
 			};
 		}

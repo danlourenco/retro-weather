@@ -4,7 +4,7 @@
 </script>
 
 <div
-	class=" flex aspect-[4/3] max-w-[968px] flex-col bg-blue-100"
+	class="flex aspect-[4/3] w-full flex-col bg-blue-100"
 	class:weatherstar-scanlines={scanlinesEnabled}
 >
 	{@render children()}
