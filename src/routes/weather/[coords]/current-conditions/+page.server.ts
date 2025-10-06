@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({
 					station: null,
 					observation: null,
 					coords,
-					pageTitle: 'CURRENT CONDITIONS'
+					pageTitle: 'Current Conditions'
 				}
 			};
 		}
@@ -54,7 +54,7 @@ export const load: PageServerLoad = async ({
 					station,
 					observation,
 					coords,
-					pageTitle: 'CURRENT CONDITIONS'
+					pageTitle: 'Current Conditions'
 				}
 			};
 		} catch (obsError) {

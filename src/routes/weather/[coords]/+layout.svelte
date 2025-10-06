@@ -1,20 +1,20 @@
 <script lang="ts">
 	import type { LayoutData } from './$types';
-	import type { Snapshot } from './$types';
 	import AppContainer from '$lib/components/AppContainer.svelte';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import WeatherPanelContainer from '$lib/components/WeatherPanelContainer.svelte';
 	import WeatherPanel from '$lib/components/WeatherPanel.svelte';
 	import Ticker from '$lib/components/Ticker.svelte';
+	import { page } from '$app/state';
 
-	let { data, children }: { data: LayoutData & { pageTitle?: string }; children: any } = $props();
+	let { data, children }: { data: LayoutData; children: any } = $props();
 
-	// Get page title from data (will be set by individual pages)
+	// Get page title from the current page's data (child page)
 	// Fallback to a default title
-	const pageTitle = $derived(data.data?.pageTitle || 'Weather');
+	const pageTitle = $derived(page.data?.data?.pageTitle || 'Weather');
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-blue-900">
+<div class="flex min-h-screen">
 	<AppContainer scanlinesEnabled={true}>
 		<AppHeader {pageTitle} />
 

@@ -1,0 +1,15 @@
+<svg width="120" height="80" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue rounded rectangle background -->
+  <rect x="2" y="2" width="116" height="76" rx="8" ry="8" fill="#0066cc" stroke="white" stroke-width="3"/>
+  
+  <!-- White text in Helvetica Bold -->
+  <text x="60" y="28" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">
+    RETRO
+  </text>
+  <text x="60" y="48" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">
+    WEATHER
+  </text>
+  <text x="60" y="68" font-family="Helvetica, Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">
+    CHANNEL
+  </text>
+</svg>
