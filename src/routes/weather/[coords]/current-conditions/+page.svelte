@@ -16,6 +16,14 @@
 	} = transformCurrentConditions(data.data?.observation, data.data?.station);
 
 	const station = data.data?.station;
+
+	// Log data to browser console
+	if (data.data?.observation) {
+		console.log('🌡️ Raw Observation Data:', JSON.stringify(data.data.observation, null, 2));
+	}
+	if (data.data?.hazards) {
+		console.log('📢 Weather Hazards/Alerts:', data.data.hazards);
+	}
 </script>
 
 <svelte:head>

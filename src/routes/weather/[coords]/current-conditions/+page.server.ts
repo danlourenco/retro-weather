@@ -1,11 +1,12 @@
 import type { PageServerLoad } from './$types';
-import { getStationsByGridpoint, getLatestObservation } from '$lib/services/nws';
+import { getStationsByGridpoint, getLatestObservation, getAlertsByPoint } from '$lib/services/nws';
 import { ErrorType, type LoaderResult } from '$lib/types/errors';
-import type { Station, Observation } from '$lib/types/domain';
+import type { Station, Observation, Hazard } from '$lib/types/domain';
 
 interface CurrentConditionsData {
 	station: Station | null;
 	observation: Observation | null;
+	hazards: Hazard[];
 	coords: string;
 	pageTitle: string;
 }
@@ -28,6 +29,15 @@ export const load: PageServerLoad = async ({
 
 	const { location, coords } = parentData.data;
 
+	// Fetch hazards/alerts for this location
+	let hazards: Hazard[] = [];
+	try {
+		const [lat, lon] = coords.split(',').map(Number);
+		hazards = await getAlertsByPoint(lat, lon);
+	} catch (hazardError) {
+		console.warn('Failed to fetch hazards:', hazardError);
+	}
+
 	try {
 		// Get stations for this grid point
 		const stations = await getStationsByGridpoint(location.gridId, location.gridX, location.gridY);
@@ -37,6 +47,7 @@ export const load: PageServerLoad = async ({
 				data: {
 					station: null,
 					observation: null,
+					hazards,
 					coords,
 					pageTitle: 'Current Conditions'
 				}
@@ -53,6 +64,7 @@ export const load: PageServerLoad = async ({
 				data: {
 					station,
 					observation,
+					hazards,
 					coords,
 					pageTitle: 'Current Conditions'
 				}
@@ -65,6 +77,7 @@ export const load: PageServerLoad = async ({
 				data: {
 					station,
 					observation: null,
+					hazards,
 					coords,
 					pageTitle: 'CURRENT CONDITIONS'
 				}
