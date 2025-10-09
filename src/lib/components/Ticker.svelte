@@ -75,7 +75,7 @@
 </script>
 
 <div
-	class="text-shadow sticky bottom-0 flex h-[80px] w-full flex-row justify-center border-t-2 border-t-gray-300 {bgClass} font-[Star4000] text-4xl text-white"
+	class="text-shadow flex h-[80px] w-full flex-row justify-center border-t-2 border-t-gray-300 {bgClass} font-[Star4000] text-4xl text-white"
 >
 	{#if mode === 'cycle'}
 		<div class="mx-auto flex w-full max-w-[968px] flex-row items-center justify-start px-12 py-4">
@@ -84,7 +84,7 @@
 	{:else}
 		<div class="relative w-full overflow-hidden">
 			<div
-				class="absolute whitespace-nowrap px-12 py-4"
+				class="absolute px-12 py-4 whitespace-nowrap"
 				style="transform: translateX({scrollPosition}%); transition: transform 0.1s linear;"
 			>
 				{currentMessage}

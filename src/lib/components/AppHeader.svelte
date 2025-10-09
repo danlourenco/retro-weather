@@ -37,35 +37,40 @@
 	});
 </script>
 
-<div class="bg-header w-full">
+<div class="w-full bg-header">
 	<div class="relative mx-auto w-full max-w-[968px]">
 		<header class="relative mt-8 h-18 w-full text-white">
 			<!-- Clipped gradient background layer - positioned to break out to viewport edges -->
-			<div class="header-gradient bg-twilight-gradient absolute" style="top: 0; bottom: 0; left: 50%; right: 0; width: 100vw; margin-left: -50vw;"></div>
+			<div
+				class="header-gradient bg-twilight-gradient absolute"
+				style="top: 0; bottom: 0; left: 50%; right: 0; width: 100vw; margin-left: -50vw;"
+			></div>
 
 			<!-- Content layer -->
-			<div class="relative z-10 flex h-full w-full flex-row items-center justify-between gap-x-12 px-8 md:px-16">
-			<!-- Logo -->
-			<div class="w-fit flex-shrink-0">
-				<img src="/images/custom-logo.svg" alt="Weatherstar" />
-			</div>
-
-			<!-- Page Title -->
-			<div class="text-shadow font-[Star4000] text-3xl text-[#ff0] sm:text-4xl">
-				{pageTitle}
-			</div>
-
-			<!-- NOAA Logo -->
-			<img src="/images/noaa.gif" class="hidden w-fit flex-shrink-0 md:block" alt="NOAA" />
-
-			<!-- Date/Time -->
 			<div
-				class="text-shadow ml-auto flex flex-shrink-0 flex-col items-end font-[Star4000Small] text-2xl text-white sm:text-2xl md:text-3xl"
+				class="relative z-10 flex h-full w-full flex-row items-center justify-between gap-x-12 px-8 md:px-16"
 			>
-				<div class="leading-none">{currentTime}</div>
-				<div class="-mt-1 text-xl sm:text-2xl md:text-3xl">{currentDate.toUpperCase()}</div>
+				<!-- Logo -->
+				<div class="w-fit flex-shrink-0">
+					<img src="/images/custom-logo.svg" alt="Weatherstar" />
+				</div>
+
+				<!-- Page Title -->
+				<div class="text-shadow font-[Star4000] text-3xl text-[#ff0] sm:text-4xl">
+					{pageTitle}
+				</div>
+
+				<!-- NOAA Logo -->
+				<img src="/images/noaa.gif" class="hidden w-fit flex-shrink-0 md:block" alt="NOAA" />
+
+				<!-- Date/Time -->
+				<div
+					class="text-shadow ml-auto hidden flex-shrink-0 flex-col items-end font-[Star4000Small] text-3xl text-white md:flex"
+				>
+					<div class="leading-none">{currentTime}</div>
+					<div class="-mt-1 text-3xl">{currentDate.toUpperCase()}</div>
+				</div>
 			</div>
-		</div>
-	</header>
+		</header>
 	</div>
 </div>

@@ -1,13 +1,15 @@
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { getLocationByPoint } from '$lib/services/nws';
+import { getLocationByPoint, getAlertsByPoint } from '$lib/services/nws';
 import { createValidationError, type LoaderResult } from '$lib/types/errors';
-import type { LocationInfo } from '$lib/types/domain';
+import type { LocationInfo, Hazard } from '$lib/types/domain';
 
 export const load: LayoutServerLoad = async ({
 	params,
 	setHeaders
-}): Promise<LoaderResult<{ location: LocationInfo; coords: string; pageTitle?: string }>> => {
+}): Promise<
+	LoaderResult<{ location: LocationInfo; coords: string; hazards: Hazard[]; pageTitle?: string }>
+> => {
 	// Validate coordinates format
 	const coords = params.coords?.split(',');
 	if (!coords || coords.length !== 2) {
@@ -34,15 +36,26 @@ export const load: LayoutServerLoad = async ({
 	try {
 		const location = await getLocationByPoint(latNum, lonNum);
 
+		// Fetch hazards/alerts for this location
+		let hazards: Hazard[] = [];
+		try {
+			hazards = await getAlertsByPoint(latNum, lonNum);
+		} catch (hazardError) {
+			console.warn('Failed to fetch hazards:', hazardError);
+			// Don't fail the whole request if hazards fail
+		}
+
 		// Set caching headers for location data (changes rarely)
+		// Note: hazards change more frequently, but we'll cache conservatively
 		setHeaders({
-			'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400'
+			'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'
 		});
 
 		return {
 			data: {
 				location,
-				coords: params.coords
+				coords: params.coords,
+				hazards
 			}
 		};
 	} catch (err: unknown) {

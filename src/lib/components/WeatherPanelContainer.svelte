@@ -2,8 +2,8 @@
 	let { children }: { children: any } = $props();
 </script>
 
-<div class="bg-sunset-gradient flex min-h-[400px] w-full flex-1 justify-center">
-	<div class="mx-auto flex w-full max-w-[968px] flex-col px-8 md:px-16">
+<div class="bg-sunset-gradient flex w-full flex-1 justify-center">
+	<div class="mx-auto flex w-full flex-col px-8 md:px-16">
 		{@render children()}
 	</div>
 </div>

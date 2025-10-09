@@ -31,7 +31,7 @@
 </svelte:head>
 
 {#if hasValidData}
-	<div class="flex flex-row justify-between">
+	<div class="flex flex-col items-center sm:flex-row md:justify-between">
 		<div class="flex w-1/2 flex-col text-center">
 			<div class="font-star-large text-3xl">
 				{temperature !== null ? `${temperature}°F` : 'N/A'}
@@ -50,8 +50,8 @@
 				{/if}
 			</div>
 		</div>
-		<div>
-			<h2 class="font-star-large mb-2 text-2xl normal-case text-yellow-300">
+		<div class="hidden sm:block">
+			<h2 class="font-star-large mb-2 text-2xl text-yellow-300 normal-case">
 				{stationName}
 			</h2>
 			<DataGrid items={weatherDataItems} />

@@ -12,6 +12,30 @@
 	// Get page title from the current page's data (child page)
 	// Fallback to a default title
 	const pageTitle = $derived(page.data?.data?.pageTitle || 'Weather');
+
+	// Build ticker messages - prioritize hazards if they exist
+	const tickerMessages = $derived.by(() => {
+		if (data.data?.hazards && data.data.hazards.length > 0) {
+			return data.data.hazards.map((h) => h.headline);
+		}
+
+		if (data.data?.location) {
+			return [
+				`Weather for ${data.data.coords}`,
+				`Grid: ${data.data.location.gridId} (${data.data.location.gridX}, ${data.data.location.gridY})`
+			];
+		}
+
+		return ['Weather Information'];
+	});
+
+	// Determine ticker variant and mode based on hazards
+	const tickerVariant = $derived(
+		data.data?.hazards && data.data.hazards.length > 0 ? 'hazard' : 'default'
+	);
+	const tickerMode = $derived(
+		data.data?.hazards && data.data.hazards.length > 0 ? 'scroll' : 'cycle'
+	);
 </script>
 
 <div class="flex min-h-screen">
@@ -21,7 +45,7 @@
 		<WeatherPanelContainer>
 			<WeatherPanel>
 				{#if data.error}
-					<div class="flex h-full flex-col items-center justify-center space-y-4 text-center">
+					<div class="flex flex-col items-center justify-center space-y-4 text-center">
 						<div class="rounded border border-red-400 bg-red-900/30 p-6 text-lg text-red-300">
 							<p class="mb-2 text-xl font-bold">⚠ Error</p>
 							<p>{data.error.message}</p>
@@ -45,13 +69,6 @@
 			</WeatherPanel>
 		</WeatherPanelContainer>
 
-		<Ticker>
-			{#if data.data?.location}
-				Weather for {data.data.coords} • Grid: {data.data.location.gridId} ({data.data.location
-					.gridX}, {data.data.location.gridY})
-			{:else}
-				Weather Information
-			{/if}
-		</Ticker>
+		<Ticker messages={tickerMessages} variant={tickerVariant} mode={tickerMode} scrollSpeed={3} />
 	</AppContainer>
 </div>

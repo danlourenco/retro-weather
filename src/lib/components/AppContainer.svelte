@@ -3,9 +3,6 @@
 		$props();
 </script>
 
-<div
-	class="flex aspect-[4/3] w-full flex-col bg-blue-100"
-	class:weatherstar-scanlines={scanlinesEnabled}
->
+<div class="flex w-full flex-col bg-blue-100" class:weatherstar-scanlines={scanlinesEnabled}>
 	{@render children()}
 </div>

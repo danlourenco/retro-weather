@@ -66,17 +66,6 @@
 				calc(100% - var(--clip-offset-bottom)) 100%,
 				0 100%
 			);
-
-			/* Responsive adjustments based on container width 
-			@container (max-width: 640px) {
-				--clip-offset-top: 180px;
-				--clip-offset-bottom: 240px;
-			}
-
-			@container (min-width: 641px) and (max-width: 768px) {
-				--clip-offset-top: 220px;
-				--clip-offset-bottom: 280px;
-			} */
 		}
 
 		.header-gradient {
