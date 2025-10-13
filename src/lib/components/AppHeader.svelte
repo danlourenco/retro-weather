@@ -38,7 +38,7 @@
 </script>
 
 <div class="w-full bg-header">
-	<div class="relative mx-auto w-full max-w-[968px]">
+	<div class="relative container mx-auto w-full">
 		<header class="relative mt-8 h-18 w-full text-white">
 			<!-- Clipped gradient background layer - positioned to break out to viewport edges -->
 			<div
@@ -47,9 +47,7 @@
 			></div>
 
 			<!-- Content layer -->
-			<div
-				class="relative z-10 flex h-full w-full flex-row items-center justify-between gap-x-12 px-8 md:px-16"
-			>
+			<div class="relative z-10 flex h-full w-full flex-row items-center justify-start gap-8">
 				<!-- Logo -->
 				<div class="w-fit flex-shrink-0">
 					<img src="/images/custom-logo.svg" alt="Weatherstar" />
