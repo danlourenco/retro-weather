@@ -12,7 +12,7 @@ permissions:
   pages: write
   id-token: write
  
-# List of jobs
+# List of jobs to run as part of the workflow
 jobs:
   deploy:
     runs-on: ubuntu-latest
