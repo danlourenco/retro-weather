@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	let { pageTitle = 'Title' } = $props<{ pageTitle?: string; children?: any }>();
+	let { pageTitle = 'Title', onTitleClick } = $props<{
+		pageTitle?: string;
+		children?: any;
+		onTitleClick?: () => void;
+	}>();
 
 	let currentTime = $state(
 		new Date().toLocaleTimeString([], {
@@ -54,9 +58,18 @@
 				</div>
 
 				<!-- Page Title -->
-				<div class="text-shadow font-[Star4000] text-3xl text-[#ff0] sm:text-4xl">
-					{pageTitle}
-				</div>
+				{#if onTitleClick}
+					<button
+						onclick={onTitleClick}
+						class="text-shadow cursor-pointer font-[Star4000] text-3xl text-[#ff0] transition-opacity hover:opacity-80 sm:text-4xl"
+					>
+						{pageTitle}
+					</button>
+				{:else}
+					<div class="text-shadow font-[Star4000] text-3xl text-[#ff0] sm:text-4xl">
+						{pageTitle}
+					</div>
+				{/if}
 
 				<!-- NOAA Logo -->
 				<img src="/images/noaa.gif" class="hidden w-fit flex-shrink-0 md:block" alt="NOAA" />

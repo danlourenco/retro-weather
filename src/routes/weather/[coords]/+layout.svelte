@@ -6,12 +6,42 @@
 	import WeatherPanel from '$lib/components/WeatherPanel.svelte';
 	import Ticker from '$lib/components/Ticker.svelte';
 	import { page } from '$app/state';
+	import { onNavigate } from '$app/navigation';
+	import { WeatherNavigation } from '$lib/services/navigation';
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
+
+	// Enable View Transitions API for smooth page transitions
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 
 	// Get page title from the current page's data (child page)
 	// Fallback to a default title
 	const pageTitle = $derived(page.data?.data?.pageTitle || 'Weather');
+
+	// Determine current route and toggle function
+	const isLocalForecast = $derived(page.url.pathname.includes('/local-forecast'));
+	const isCurrentConditions = $derived(page.url.pathname.includes('/current-conditions'));
+
+	const handleTitleClick = () => {
+		const coords = data.data?.coords;
+		if (!coords) return;
+
+		// Toggle between the two routes
+		if (isLocalForecast) {
+			WeatherNavigation.goToCurrentConditions(coords);
+		} else if (isCurrentConditions) {
+			WeatherNavigation.goToLocalForecast(coords);
+		}
+	};
 
 	// Build ticker messages - prioritize hazards if they exist
 	const tickerMessages = $derived.by(() => {
@@ -40,7 +70,10 @@
 
 <div class="flex min-h-screen">
 	<AppContainer scanlinesEnabled={true}>
-		<AppHeader {pageTitle} />
+		<AppHeader
+			{pageTitle}
+			onTitleClick={isLocalForecast || isCurrentConditions ? handleTitleClick : undefined}
+		/>
 
 		<WeatherPanelContainer>
 			<WeatherPanel>
