@@ -53,9 +53,9 @@
 			<!-- Content layer -->
 			<div class="relative z-10 flex h-full w-full flex-row items-center justify-start gap-8">
 				<!-- Logo -->
-				<div class="w-fit flex-shrink-0">
+				<a href="/" class="w-fit flex-shrink-0 transition-opacity hover:opacity-80">
 					<img src="/images/custom-logo.svg" alt="Weatherstar" />
-				</div>
+				</a>
 
 				<!-- Page Title -->
 				{#if onTitleClick}

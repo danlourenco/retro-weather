@@ -5,6 +5,17 @@
 import type { Observation, Station } from '$lib/types/domain';
 import { celsiusToFahrenheit, metersToMiles, getWeatherIcon, formatWind } from '$lib';
 
+/**
+ * Extract city name from station name
+ * Station names are typically formatted as "City, Full Station Name"
+ * This function returns just the city portion
+ * @param stationName - Full station name (e.g., "Norwood, Norwood Memorial Airport")
+ * @returns City name (e.g., "Norwood") or "Unknown Station" if not available
+ */
+export function extractCityFromStation(stationName: string | null | undefined): string {
+	return stationName?.split(',')[0]?.trim() || 'Unknown Station';
+}
+
 export interface WeatherDataItem {
 	label: string;
 	value: string | number;
@@ -66,8 +77,8 @@ export function transformCurrentConditions(
 			? Math.round(celsiusToFahrenheit(observation.windChillC))
 			: 'N/A';
 
-	// Extract city name from station name (split on comma and take first part)
-	const stationName = station?.name?.split(',')[0]?.trim() || 'Unknown Station';
+	// Extract city name from station name
+	const stationName = extractCityFromStation(station?.name);
 
 	// Get weather icon
 	console.log('Icon URL from observation:', observation?.icon);

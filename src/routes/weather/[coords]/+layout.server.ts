@@ -1,14 +1,26 @@
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import { getLocationByPoint, getAlertsByPoint } from '$lib/services/nws';
+import {
+	getLocationByPoint,
+	getAlertsByPoint,
+	getStationsByGridpoint,
+	getLatestObservation
+} from '$lib/services/nws';
 import { createValidationError, type LoaderResult } from '$lib/types/errors';
-import type { LocationInfo, Hazard } from '$lib/types/domain';
+import type { LocationInfo, Hazard, Station, Observation } from '$lib/types/domain';
 
 export const load: LayoutServerLoad = async ({
 	params,
 	setHeaders
 }): Promise<
-	LoaderResult<{ location: LocationInfo; coords: string; hazards: Hazard[]; pageTitle?: string }>
+	LoaderResult<{
+		location: LocationInfo;
+		coords: string;
+		hazards: Hazard[];
+		station: Station | null;
+		observation: Observation | null;
+		pageTitle?: string;
+	}>
 > => {
 	// Validate coordinates format
 	const coords = params.coords?.split(',');
@@ -45,6 +57,27 @@ export const load: LayoutServerLoad = async ({
 			// Don't fail the whole request if hazards fail
 		}
 
+		// Fetch the observation station for this location
+		let station: Station | null = null;
+		let observation: Observation | null = null;
+		try {
+			const stations = await getStationsByGridpoint(location.gridId, location.gridX, location.gridY);
+			if (stations.length > 0) {
+				station = stations[0]; // Use the primary/closest station
+
+				// Fetch the latest observation from this station
+				try {
+					observation = await getLatestObservation(station.id);
+				} catch (obsError) {
+					console.warn('Failed to fetch observation:', obsError);
+					// Don't fail if observation fetch fails
+				}
+			}
+		} catch (stationError) {
+			console.warn('Failed to fetch station:', stationError);
+			// Don't fail the whole request if station fetch fails
+		}
+
 		// Set caching headers for location data (changes rarely)
 		// Note: hazards change more frequently, but we'll cache conservatively
 		setHeaders({
@@ -55,7 +88,9 @@ export const load: LayoutServerLoad = async ({
 			data: {
 				location,
 				coords: params.coords,
-				hazards
+				hazards,
+				station,
+				observation
 			}
 		};
 	} catch (err: unknown) {

@@ -8,6 +8,8 @@
 	import { page } from '$app/state';
 	import { onNavigate } from '$app/navigation';
 	import { WeatherNavigation } from '$lib/services/navigation';
+	import { extractCityFromStation } from '$lib/utils/weather';
+	import { celsiusToFahrenheit } from '$lib';
 
 	let { data, children }: { data: LayoutData; children: any } = $props();
 
@@ -50,10 +52,39 @@
 		}
 
 		if (data.data?.location) {
-			return [
-				`Weather for ${data.data.coords}`,
-				`Grid: ${data.data.location.gridId} (${data.data.location.gridX}, ${data.data.location.gridY})`
-			];
+			const messages: string[] = [];
+
+			// Extract city name from station name, fallback to coords if not available
+			const cityName = data.data.station?.name
+				? extractCityFromStation(data.data.station.name)
+				: null;
+			const locationName =
+				cityName && cityName !== 'Unknown Station' ? cityName : data.data.coords;
+
+			// Message 1: Location
+			messages.push(`Conditions at ${locationName}`);
+
+			// Message 2: Temperature (if available)
+			if (data.data.observation?.temperatureC !== undefined) {
+				const tempF = Math.round(celsiusToFahrenheit(data.data.observation.temperatureC));
+				messages.push(`Temp: ${tempF}°F`);
+			}
+
+			// Message 3: Humidity and Dewpoint (if available)
+			const humidity = data.data.observation?.relativeHumidity;
+			const dewpointC = data.data.observation?.dewpointC;
+
+			if (humidity !== undefined && dewpointC !== undefined) {
+				const dewpointF = Math.round(celsiusToFahrenheit(dewpointC));
+				messages.push(`Humidity: ${Math.round(humidity)}%  Dewpoint: ${dewpointF}°F`);
+			} else if (humidity !== undefined) {
+				messages.push(`Humidity: ${Math.round(humidity)}%`);
+			} else if (dewpointC !== undefined) {
+				const dewpointF = Math.round(celsiusToFahrenheit(dewpointC));
+				messages.push(`Dewpoint: ${dewpointF}°F`);
+			}
+
+			return messages;
 		}
 
 		return ['Weather Information'];

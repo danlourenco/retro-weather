@@ -78,7 +78,7 @@
 	class="text-shadow flex h-[80px] w-full flex-row justify-center border-t-2 border-t-gray-300 {bgClass} font-[Star4000] text-4xl text-white"
 >
 	{#if mode === 'cycle'}
-		<div class="mx-auto flex w-full max-w-[968px] flex-row items-center justify-start px-12 py-4">
+		<div class="container mx-auto flex w-full flex-row items-center justify-start py-4">
 			{currentMessage}
 		</div>
 	{:else}

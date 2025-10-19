@@ -45,7 +45,7 @@
 			Period {index + 1} of {forecasts.length}
 		</div> -->
 
-		<p class="text-shadow font-[Star4000] text-5xl leading-14 uppercase">
+		<p class="text-shadow font-[Star4000] text-3xl uppercase md:text-4xl lg:text-5xl lg:leading-14">
 			{`${currentForecast.dayName}... ${currentForecast.detailedForecast ?? currentForecast.shortForecast ?? 'No forecast available'}`}
 		</p>
 		<!-- Progress indicator dots -->
