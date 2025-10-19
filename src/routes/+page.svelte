@@ -11,6 +11,8 @@
 		getGeolocationErrorMessage
 	} from '$lib/utils/geolocation';
 
+	let { data } = $props();
+
 	let zipcode = $state('');
 	let isLoading = $state(false);
 	let errorMessage = $state('');
@@ -97,6 +99,7 @@
 				<!-- Welcome Header -->
 				<div class="space-y-4">
 					<p class="text-xl text-blue-200">Your Local Weather Information</p>
+					<p class="text-sm text-blue-300">v{data.version}</p>
 				</div>
 
 				<!-- Location Input Section -->
