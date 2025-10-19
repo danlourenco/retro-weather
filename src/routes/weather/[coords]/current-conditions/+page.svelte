@@ -31,15 +31,15 @@
 </svelte:head>
 
 {#if hasValidData}
-	<div class="flex flex-col items-center sm:flex-row md:justify-between">
-		<div class="flex w-1/2 flex-col text-center">
+	<div class="flex flex-col gap-4 sm:flex-row md:justify-center lg:gap-16">
+		<div class="flex flex-col text-center">
 			<div class="font-star-large text-3xl">
 				{temperature !== null ? `${temperature}°F` : 'N/A'}
 			</div>
 			<div class="font-star-extended text-4xl">
 				{textDescription}
 			</div>
-			<div class="justify-items-center">
+			<div class="">
 				{#if weatherImage}
 					<div class="mt-4">
 						<img src={weatherImage} alt={textDescription} class="mx-auto h-32 w-auto" />
@@ -54,7 +54,9 @@
 			<h2 class="font-star-large mb-2 text-2xl text-yellow-300 normal-case">
 				{stationName}
 			</h2>
-			<DataGrid items={weatherDataItems} />
+			<div class="pl-4">
+				<DataGrid items={weatherDataItems} />
+			</div>
 		</div>
 	</div>
 {:else if data.error}
