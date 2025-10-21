@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
 	let { pageTitle = 'Title', onTitleClick } = $props<{
 		pageTitle?: string;
 		children?: any;
@@ -23,7 +21,7 @@
 		})
 	);
 
-	onMount(() => {
+	$effect(() => {
 		const interval = setInterval(() => {
 			currentTime = new Date().toLocaleTimeString([], {
 				hour: '2-digit',
