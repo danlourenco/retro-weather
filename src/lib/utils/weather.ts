@@ -2,7 +2,7 @@
  * Weather data transformation utilities for current conditions display
  */
 
-import type { Observation, Station } from '$lib/types/domain';
+import type { Observation, Station, WeatherDataItem } from '$lib/types/domain';
 import { celsiusToFahrenheit, metersToMiles, getWeatherIcon, formatWind } from '$lib';
 
 /**
@@ -14,12 +14,6 @@ import { celsiusToFahrenheit, metersToMiles, getWeatherIcon, formatWind } from '
  */
 export function extractCityFromStation(stationName: string | null | undefined): string {
 	return stationName?.split(',')[0]?.trim() || 'Unknown Station';
-}
-
-export interface WeatherDataItem {
-	label: string;
-	value: string | number;
-	unit?: string;
 }
 
 export interface CurrentConditionsData {
@@ -46,6 +40,15 @@ export function transformCurrentConditions(
 	// Log raw data before transformations
 	console.log('🌡️ Raw observation data:', observation);
 	console.log('📍 Raw station data:', station);
+
+	// Log data freshness
+	if (observation?.timestamp) {
+		const observationTime = new Date(observation.timestamp);
+		const now = new Date();
+		const ageMinutes = Math.floor((now.getTime() - observationTime.getTime()) / 60000);
+		console.log(`📅 Observation timestamp: ${observation.timestamp}`);
+		console.log(`⏰ Data age: ${ageMinutes} minutes old`);
+	}
 
 	const hasValidData = observation !== null && observation !== undefined;
 
