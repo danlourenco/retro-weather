@@ -38,7 +38,8 @@ export function mapObservation(dto: NWSObservationResponse): Observation {
 		windChillC: p.windChill?.value ?? undefined,
 		windDirectionDeg: p.windDirection?.value ?? undefined,
 		windSpeedKmh: p.windSpeed?.value ?? undefined,
-		icon: p.icon ?? null
+		icon: p.icon ?? null,
+		timestamp: p.timestamp ?? null
 	};
 }
 

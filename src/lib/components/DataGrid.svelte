@@ -1,9 +1,5 @@
 <script lang="ts">
-	interface WeatherDataItem {
-		label: string;
-		value: string | number;
-		unit?: string;
-	}
+	import type { WeatherDataItem } from '$lib/types/domain';
 
 	let { items }: { items: WeatherDataItem[] } = $props();
 </script>

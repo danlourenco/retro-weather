@@ -63,6 +63,7 @@ export interface NWSObservationResponse {
 			value?: number | null;
 		};
 		icon?: string | null;
+		timestamp?: string | null;
 	};
 }
 

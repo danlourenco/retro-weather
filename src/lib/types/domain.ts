@@ -25,6 +25,7 @@ export interface Observation {
 	windDirectionDeg?: number;
 	windSpeedKmh?: number;
 	icon?: string | null;
+	timestamp?: string | null;
 }
 
 export interface ForecastDay {
@@ -44,4 +45,10 @@ export interface Hazard {
 	urgency?: string;
 	certainty?: string;
 	areas?: string;
+}
+
+export interface WeatherDataItem {
+	label: string;
+	value: string | number;
+	unit?: string;
 }
