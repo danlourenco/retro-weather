@@ -78,7 +78,8 @@ export const ObservationSchema = z.object({
 				value: z.number().nullable().optional()
 			})
 			.optional(),
-		icon: z.string().nullable().optional()
+		icon: z.string().nullable().optional(),
+		timestamp: z.string().nullable().optional()
 	})
 });
 
