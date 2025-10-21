@@ -2,6 +2,8 @@
  * Geolocation and location lookup utilities
  */
 
+import { ZIPCODE_API_BASE_URL, GEOLOCATION_OPTIONS } from '$lib/config';
+
 export interface GeolocationResult {
 	lat: number;
 	lon: number;
@@ -21,7 +23,7 @@ export interface GeolocationError {
  */
 export async function lookupZipcode(zipcode: string): Promise<GeolocationResult | null> {
 	try {
-		const response = await fetch(`https://api.zippopotam.us/us/${zipcode.trim()}`);
+		const response = await fetch(`${ZIPCODE_API_BASE_URL}/us/${zipcode.trim()}`);
 
 		if (!response.ok) {
 			return null;
@@ -70,9 +72,8 @@ export function getCurrentPosition(options?: PositionOptions): Promise<Geolocati
 		}
 
 		navigator.geolocation.getCurrentPosition(resolve, reject, {
-			timeout: 10000,
-			enableHighAccuracy: true,
-			...options
+			...GEOLOCATION_OPTIONS,
+			...options // Allow caller to override defaults
 		});
 	});
 }

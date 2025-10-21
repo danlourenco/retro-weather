@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { getStationsByGridpoint, getLatestObservation, getAlertsByPoint } from '$lib/services/nws';
 import { ErrorType, type LoaderResult } from '$lib/types/errors';
+import { withErrorHandling, withGracefulFallback } from '$lib/utils/loader';
 import type { Station, Observation, Hazard } from '$lib/types/domain';
 
 interface CurrentConditionsData {
@@ -29,69 +30,45 @@ export const load: PageServerLoad = async ({
 
 	const { location, coords } = parentData.data;
 
-	// Fetch hazards/alerts for this location
-	let hazards: Hazard[] = [];
-	try {
-		const [lat, lon] = coords.split(',').map(Number);
-		hazards = await getAlertsByPoint(lat, lon);
-	} catch (hazardError) {
-		console.warn('Failed to fetch hazards:', hazardError);
-	}
+	// Fetch hazards/alerts for this location (gracefully fail)
+	const [lat, lon] = coords.split(',').map(Number);
+	const hazards = await withGracefulFallback(
+		() => getAlertsByPoint(lat, lon),
+		[],
+		'Failed to fetch hazards'
+	);
 
-	try {
+	// Get stations and observations with consistent error handling
+	return withErrorHandling(async () => {
 		// Get stations for this grid point
 		const stations = await getStationsByGridpoint(location.gridId, location.gridX, location.gridY);
 
 		if (stations.length === 0) {
 			return {
-				data: {
-					station: null,
-					observation: null,
-					hazards,
-					coords,
-					pageTitle: 'Current Conditions'
-				}
+				station: null,
+				observation: null,
+				hazards,
+				coords,
+				pageTitle: 'Current Conditions'
 			};
 		}
 
 		// Get observation from the first available station
 		const station = stations[0];
 
-		try {
-			const observation = await getLatestObservation(station.id);
+		// Gracefully handle observation fetch failure
+		const observation = await withGracefulFallback(
+			() => getLatestObservation(station.id),
+			null,
+			`Failed to get observation for station ${station.id}`
+		);
 
-			return {
-				data: {
-					station,
-					observation,
-					hazards,
-					coords,
-					pageTitle: 'Current Conditions'
-				}
-			};
-		} catch (obsError) {
-			console.warn(`Failed to get observation for station ${station.id}:`, obsError);
-
-			// Return station info even if observation fails
-			return {
-				data: {
-					station,
-					observation: null,
-					hazards,
-					coords,
-					pageTitle: 'CURRENT CONDITIONS'
-				}
-			};
-		}
-	} catch (err: unknown) {
-		console.error('Failed to load current conditions:', err);
 		return {
-			data: null,
-			error: {
-				type: ErrorType.API_ERROR,
-				message: 'Failed to load current weather conditions',
-				retryable: true
-			}
+			station,
+			observation,
+			hazards,
+			coords,
+			pageTitle: 'CURRENT CONDITIONS'
 		};
-	}
+	}, 'Failed to load current weather conditions');
 };

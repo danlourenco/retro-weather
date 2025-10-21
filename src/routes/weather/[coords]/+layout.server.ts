@@ -7,6 +7,7 @@ import {
 	getLatestObservation
 } from '$lib/services/nws';
 import { createValidationError, type LoaderResult } from '$lib/types/errors';
+import { withGracefulFallback } from '$lib/utils/loader';
 import type { LocationInfo, Hazard, Station, Observation } from '$lib/types/domain';
 
 export const load: LayoutServerLoad = async ({
@@ -48,34 +49,32 @@ export const load: LayoutServerLoad = async ({
 	try {
 		const location = await getLocationByPoint(latNum, lonNum);
 
-		// Fetch hazards/alerts for this location
-		let hazards: Hazard[] = [];
-		try {
-			hazards = await getAlertsByPoint(latNum, lonNum);
-		} catch (hazardError) {
-			console.warn('Failed to fetch hazards:', hazardError);
-			// Don't fail the whole request if hazards fail
-		}
+		// Fetch hazards/alerts for this location (gracefully fail)
+		const hazards = await withGracefulFallback(
+			() => getAlertsByPoint(latNum, lonNum),
+			[],
+			'Failed to fetch hazards'
+		);
 
-		// Fetch the observation station for this location
+		// Fetch the observation station for this location (gracefully fail)
 		let station: Station | null = null;
 		let observation: Observation | null = null;
-		try {
-			const stations = await getStationsByGridpoint(location.gridId, location.gridX, location.gridY);
-			if (stations.length > 0) {
-				station = stations[0]; // Use the primary/closest station
 
-				// Fetch the latest observation from this station
-				try {
-					observation = await getLatestObservation(station.id);
-				} catch (obsError) {
-					console.warn('Failed to fetch observation:', obsError);
-					// Don't fail if observation fetch fails
-				}
-			}
-		} catch (stationError) {
-			console.warn('Failed to fetch station:', stationError);
-			// Don't fail the whole request if station fetch fails
+		const stations = await withGracefulFallback(
+			() => getStationsByGridpoint(location.gridId, location.gridX, location.gridY),
+			[],
+			'Failed to fetch stations'
+		);
+
+		if (stations.length > 0) {
+			station = stations[0]; // Use the primary/closest station
+
+			// Fetch the latest observation from this station (gracefully fail)
+			observation = await withGracefulFallback(
+				() => getLatestObservation(station!.id),
+				null,
+				'Failed to fetch observation'
+			);
 		}
 
 		// Set caching headers for location data (changes rarely)

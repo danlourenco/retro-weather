@@ -84,6 +84,17 @@
 				messages.push(`Dewpoint: ${dewpointF}°F`);
 			}
 
+			// Message 4: Last data fetch timestamp
+			if (data.data.observation?.timestamp) {
+				const fetchTime = new Date(data.data.observation.timestamp);
+				const timeStr = fetchTime.toLocaleTimeString('en-US', {
+					hour: 'numeric',
+					minute: '2-digit',
+					hour12: true
+				});
+				messages.push(`Last data fetched at: ${timeStr}`);
+			}
+
 			return messages;
 		}
 

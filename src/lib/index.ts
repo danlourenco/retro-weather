@@ -1,5 +1,11 @@
 // Utility functions for the weather app
 
+import {
+	getIconPath,
+	WeatherIcons,
+	NWS_CONDITION_MAPPINGS
+} from '$lib/constants/weather-icons';
+
 /* Unit Conversions */
 export const celsiusToFahrenheit = (celsius: number) => (celsius * 9) / 5 + 32;
 
@@ -35,6 +41,14 @@ export const directionToNSEW = (direction: number | null | undefined): string =>
 };
 
 /* Weather Icon Utilities */
+/**
+ * Get weather icon path from NWS icon URL
+ * @param iconUrl - NWS icon URL (e.g., "https://api.weather.gov/icons/land/day/skc")
+ * @returns Full path to local weather icon, or null if iconUrl is invalid
+ *
+ * Reference: https://www.weather.gov/forecast-icons
+ * Maps NWS condition codes to retro Weather Channel icon filenames
+ */
 export const getWeatherIcon = (iconUrl: string | null | undefined): string | null => {
 	if (!iconUrl) return null;
 
@@ -45,118 +59,22 @@ export const getWeatherIcon = (iconUrl: string | null | undefined): string | nul
 	// Extract the condition from the URL
 	const condition = iconUrl.split('/').pop()?.split('?')[0] || '';
 
-	// Icon mapping based on NWS condition codes
-	// Reference: https://www.weather.gov/forecast-icons
-	// Maps to TWC icon filenames in /static/images/weather/
+	// Find matching condition in mappings
+	for (const mapping of NWS_CONDITION_MAPPINGS) {
+		const pattern =
+			typeof mapping.pattern === 'string'
+				? new RegExp(`^${mapping.pattern}`)
+				: mapping.pattern;
 
-	const basePath = '/images/weather/';
-
-	// Clear sky
-	if (condition.startsWith('skc') || condition.startsWith('hot') || condition.startsWith('cold')) {
-		return basePath + (isNight ? 'CC_Clear0.gif' : 'Sunny.gif');
+		if (pattern.test(condition)) {
+			const iconName = isNight ? mapping.nightIcon : mapping.dayIcon;
+			return getIconPath(iconName);
+		}
 	}
 
-	// Haze
-	if (condition.startsWith('haze')) {
-		return basePath + (isNight ? 'CC_Clear0.gif' : 'Sunny.gif');
-	}
-
-	// Few/scattered clouds
-	if (condition.startsWith('few') || condition.startsWith('sct')) {
-		return basePath + (isNight ? 'CC_PartlyCloudy0.gif' : 'CC_PartlyCloudy1.gif');
-	}
-
-	// Broken clouds
-	if (condition.startsWith('bkn')) {
-		return basePath + (isNight ? 'CC_MostlyCloudy0.gif' : 'CC_MostlyCloudy1.gif');
-	}
-
-	// Overcast
-	if (condition.startsWith('ovc')) {
-		return basePath + 'CC_Cloudy.gif';
-	}
-
-	// Fog
-	if (condition.startsWith('fog')) {
-		return basePath + 'CC_Fog.gif';
-	}
-
-	// Smoke
-	if (condition.startsWith('smoke')) {
-		return basePath + 'CC_Fog.gif'; // Use fog icon for smoke
-	}
-
-	// Rain/sleet mix
-	if (condition.startsWith('rain_sleet')) {
-		return basePath + 'Rain-Sleet.gif';
-	}
-
-	// Sleet
-	if (condition.startsWith('sleet')) {
-		return basePath + 'Sleet.gif';
-	}
-
-	// Showers
-	if (condition.startsWith('rain_showers')) {
-		return basePath + 'CC_Showers.gif';
-	}
-
-	// Rain
-	if (condition.startsWith('rain') && !condition.includes('_')) {
-		return basePath + 'CC_Rain.gif';
-	}
-
-	// Snow
-	if (condition.startsWith('snow') && !condition.includes('_')) {
-		return basePath + 'CC_Snow.gif';
-	}
-
-	// Rain/snow mix
-	if (condition.startsWith('rain_snow')) {
-		return basePath + 'CC_RainSnow.gif';
-	}
-
-	// Freezing rain
-	if (condition.startsWith('fzra') || condition.startsWith('rain_fzra')) {
-		return basePath + 'CC_FreezingRain.gif';
-	}
-
-	// Snow/freezing rain
-	if (condition.startsWith('snow_fzra')) {
-		return basePath + 'Freezing-Rain.gif';
-	}
-
-	// Snow/sleet
-	if (condition.startsWith('snow_sleet')) {
-		return basePath + 'Snow-Sleet.gif';
-	}
-
-	// Thunderstorms
-	if (condition.startsWith('tsra_sct') || condition.startsWith('tsra')) {
-		return basePath + 'CC_TStorm.gif';
-	}
-
-	// Severe weather
-	if (
-		condition.startsWith('tornado') ||
-		condition.startsWith('hurricane') ||
-		condition.startsWith('tropical_storm')
-	) {
-		return basePath + 'CC_Thunder.gif';
-	}
-
-	// Windy
-	if (condition.startsWith('wind_')) {
-		return basePath + 'CC_Windy.gif';
-	}
-
-	// Blizzard
-	if (condition.startsWith('blizzard')) {
-		return basePath + 'Blowing-Snow.gif';
-	}
-
-	// Default fallback
-	return basePath + (isNight ? 'CC_PartlyCloudy0.gif' : 'CC_PartlyCloudy1.gif');
+	// Default fallback for unknown conditions
+	const fallbackIcon = isNight ? WeatherIcons.DEFAULT_NIGHT : WeatherIcons.DEFAULT_DAY;
+	return getIconPath(fallbackIcon);
 };
 
 /* Wind Speed Formatting */
