@@ -24,6 +24,14 @@ export const load: PageServerLoad = async ({
 		};
 	}
 
+	// Snapshot fetched the forecast URL but the request failed. Surface it as a retryable
+	// LoaderResult error so the page shows the proper error/retry UI instead of a misleading
+	// empty-forecast state.
+	const forecastError = parentData.data.errors?.forecast;
+	if (forecastError) {
+		return { data: null, error: forecastError };
+	}
+
 	const { forecast, coords } = parentData.data;
 
 	return {

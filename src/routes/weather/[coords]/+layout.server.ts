@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { weather } from '$lib/server/weather';
+import type { WeatherSnapshot } from '$lib/server/weather';
 import { createValidationError, type LoaderResult } from '$lib/types/errors';
 import type { LocationInfo, Hazard, Station, Observation, ForecastDay } from '$lib/types/domain';
 
@@ -15,6 +16,7 @@ export const load: LayoutServerLoad = async ({
 		station: Station | null;
 		observation: Observation | null;
 		forecast: ForecastDay[];
+		errors: WeatherSnapshot['errors'];
 		pageTitle?: string;
 	}>
 > => {
@@ -56,7 +58,8 @@ export const load: LayoutServerLoad = async ({
 				hazards: snapshot.hazards,
 				station: snapshot.stations[0] ?? null,
 				observation: snapshot.observation,
-				forecast: snapshot.forecast
+				forecast: snapshot.forecast,
+				errors: snapshot.errors
 			}
 		};
 	} catch (err: unknown) {
