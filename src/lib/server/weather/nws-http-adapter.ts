@@ -2,7 +2,7 @@ import type { z } from 'zod';
 import { fetchWithRetry, DEFAULT_RETRY, type RetryConfig } from '$lib/utils/http';
 import { NWS_BASE_URL } from '$lib/config';
 import { createApiError } from '$lib/types/errors';
-import type { WeatherProvider, Coords } from './port';
+import type { WeatherProvider, Coords, WeatherSnapshot } from './port';
 import {
 	PointsResponseSchema,
 	ForecastSchema,
@@ -63,15 +63,65 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 		return mapForecast(dto);
 	}
 
-	// Stubs for the rest of the port — implemented in later tasks.
-	const notYet = (name: string) => async () => {
-		throw new Error(`${name} not implemented`);
-	};
+	async function getStations(gridId: string, x: number, y: number) {
+		const url = `${base}/gridpoints/${gridId}/${x},${y}/stations`;
+		const dto = await getJson(transport, url, StationsSchema, 'Stations');
+		return mapStations(dto);
+	}
 
-	return {
-		location,
-		hazards,
-		forecast,
-		snapshot: notYet('snapshot') as WeatherProvider['snapshot']
-	};
+	async function getObservation(stationId: string) {
+		const url = `${base}/stations/${stationId}/observations/latest`;
+		const dto = await getJson(transport, url, ObservationSchema, 'Observation');
+		return mapObservation(dto);
+	}
+
+	async function snapshot(coords: Coords) {
+		const loc = await location(coords);
+		const stations = await getStations(loc.gridId, loc.gridX, loc.gridY);
+
+		const errors: WeatherSnapshot['errors'] = {};
+
+		const observationPromise =
+			stations.length === 0
+				? Promise.reject(createApiError('No observation stations available for this location'))
+				: getObservation(stations[0].id);
+
+		const [obsResult, forecastResult, hazardsResult] = await Promise.allSettled([
+			observationPromise,
+			forecast(loc.forecast),
+			hazards(coords)
+		]);
+
+		let observation: WeatherSnapshot['observation'] = null;
+		if (obsResult.status === 'fulfilled') {
+			observation = obsResult.value;
+		} else {
+			errors.observation = obsResult.reason;
+		}
+
+		let forecastDays: WeatherSnapshot['forecast'] = [];
+		if (forecastResult.status === 'fulfilled') {
+			forecastDays = forecastResult.value;
+		} else {
+			errors.forecast = forecastResult.reason;
+		}
+
+		let hazardsList: WeatherSnapshot['hazards'] = [];
+		if (hazardsResult.status === 'fulfilled') {
+			hazardsList = hazardsResult.value;
+		} else {
+			errors.hazards = hazardsResult.reason;
+		}
+
+		return {
+			location: loc,
+			stations,
+			observation,
+			forecast: forecastDays,
+			hazards: hazardsList,
+			errors
+		};
+	}
+
+	return { location, hazards, forecast, snapshot };
 }

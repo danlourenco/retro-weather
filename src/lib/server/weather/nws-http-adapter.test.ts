@@ -6,7 +6,10 @@ import {
 	POINTS_FIXTURE,
 	ALERTS_FIXTURE,
 	ALERTS_EMPTY_FIXTURE,
-	FORECAST_FIXTURE
+	FORECAST_FIXTURE,
+	STATIONS_FIXTURE,
+	OBSERVATION_FIXTURE,
+	STATIONS_EMPTY_FIXTURE
 } from './__fixtures__/nws';
 
 describe('NwsHttpProvider.location', () => {
@@ -89,9 +92,7 @@ describe('NwsHttpProvider.forecast', () => {
 		const transport = fakeTransport({ '/gridpoints/': FORECAST_FIXTURE });
 		const provider = createNwsHttpProvider({ transport });
 
-		const result = await provider.forecast(
-			'https://api.weather.gov/gridpoints/OKX/33,35/forecast'
-		);
+		const result = await provider.forecast('https://api.weather.gov/gridpoints/OKX/33,35/forecast');
 
 		expect(result).toHaveLength(2);
 		expect(result[0]).toEqual({
@@ -125,5 +126,28 @@ describe('NwsHttpProvider.forecast', () => {
 		await expect(
 			provider.forecast('https://api.weather.gov/gridpoints/OKX/33,35/forecast')
 		).rejects.toMatchObject({ type: 'API_ERROR', statusCode: 502 });
+	});
+});
+
+describe('NwsHttpProvider.snapshot', () => {
+	it('returns full snapshot when all calls succeed', async () => {
+		const transport = fakeTransport({
+			'/observations/latest': OBSERVATION_FIXTURE,
+			'/alerts/active': ALERTS_FIXTURE,
+			'/stations': STATIONS_FIXTURE,
+			'/gridpoints/': FORECAST_FIXTURE,
+			'/points/': POINTS_FIXTURE
+		});
+		const provider = createNwsHttpProvider({ transport });
+
+		const snap = await provider.snapshot({ lat: 40.7, lon: -74 });
+
+		expect(snap.location.gridId).toBe('OKX');
+		expect(snap.stations).toHaveLength(2);
+		expect(snap.observation).not.toBeNull();
+		expect(snap.observation?.temperatureC).toBe(15.5);
+		expect(snap.forecast).toHaveLength(2);
+		expect(snap.hazards).toHaveLength(1);
+		expect(snap.errors).toEqual({});
 	});
 });
