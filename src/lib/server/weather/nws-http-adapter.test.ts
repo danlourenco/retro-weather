@@ -218,18 +218,25 @@ describe('NwsHttpProvider.snapshot', () => {
 		});
 	});
 
-	it('throws when stations call fails', async () => {
+	it('captures stations error and lets forecast/hazards still resolve when stations fails', async () => {
 		const transport: Fetcher = async (url) => {
+			if (url.includes('/alerts/active'))
+				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
 			if (url.includes('/stations')) return new Response('boom', { status: 500 });
+			if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
 			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
 			return new Response('unmocked', { status: 404 });
 		};
 		const provider = createNwsHttpProvider({ transport });
 
-		await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
-			type: 'API_ERROR',
-			statusCode: 500
-		});
+		const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+		expect(snap.stations).toEqual([]);
+		expect(snap.errors.stations).toMatchObject({ type: 'API_ERROR', statusCode: 500 });
+		expect(snap.observation).toBeNull();
+		expect(snap.errors.observation).toBeUndefined();
+		expect(snap.forecast).toHaveLength(2);
+		expect(snap.hazards).toEqual([]);
 	});
 
 	it('returns observation=null with synthetic error when stations is empty', async () => {

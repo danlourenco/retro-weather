@@ -12,7 +12,7 @@ export interface WeatherSnapshot {
 	observation: Observation | null;
 	forecast: ForecastDay[];
 	hazards: Hazard[];
-	errors: Partial<Record<'observation' | 'forecast' | 'hazards', WeatherError>>;
+	errors: Partial<Record<'stations' | 'observation' | 'forecast' | 'hazards', WeatherError>>;
 }
 
 export interface WeatherProvider {

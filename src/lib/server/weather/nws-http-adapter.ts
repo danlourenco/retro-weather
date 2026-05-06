@@ -77,26 +77,22 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 
 	async function snapshot(coords: Coords) {
 		const loc = await location(coords);
-		const stations = await getStations(loc.gridId, loc.gridX, loc.gridY);
 
 		const errors: WeatherSnapshot['errors'] = {};
 
-		const observationPromise =
-			stations.length === 0
-				? Promise.reject(createApiError('No observation stations available for this location'))
-				: getObservation(stations[0].id);
-
-		const [obsResult, forecastResult, hazardsResult] = await Promise.allSettled([
-			observationPromise,
+		// Run stations + forecast + hazards in parallel. Only `location` is unrecoverable;
+		// any of these three can fail without taking down sibling routes that don't need them.
+		const [stationsResult, forecastResult, hazardsResult] = await Promise.allSettled([
+			getStations(loc.gridId, loc.gridX, loc.gridY),
 			forecast(loc.forecast),
 			hazards(coords)
 		]);
 
-		let observation: WeatherSnapshot['observation'] = null;
-		if (obsResult.status === 'fulfilled') {
-			observation = obsResult.value;
+		let stations: WeatherSnapshot['stations'] = [];
+		if (stationsResult.status === 'fulfilled') {
+			stations = stationsResult.value;
 		} else {
-			errors.observation = obsResult.reason;
+			errors.stations = stationsResult.reason;
 		}
 
 		let forecastDays: WeatherSnapshot['forecast'] = [];
@@ -112,6 +108,21 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 		} else {
 			errors.hazards = hazardsResult.reason;
 		}
+
+		// Observation depends on stations, so it's sequenced after.
+		let observation: WeatherSnapshot['observation'] = null;
+		if (stations.length > 0) {
+			try {
+				observation = await getObservation(stations[0].id);
+			} catch (err) {
+				errors.observation = err as WeatherSnapshot['errors']['observation'];
+			}
+		} else if (!errors.stations) {
+			// Stations request succeeded but returned an empty list — synthesize an error so
+			// callers can distinguish "no observation possible" from "observation not yet attempted".
+			errors.observation = createApiError('No observation stations available for this location');
+		}
+		// else: stations request failed; errors.stations is the root cause and observation can't be attempted.
 
 		return {
 			location: loc,
