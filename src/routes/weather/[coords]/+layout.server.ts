@@ -1,14 +1,9 @@
 import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
-import {
-	getLocationByPoint,
-	getAlertsByPoint,
-	getStationsByGridpoint,
-	getLatestObservation
-} from '$lib/services/nws';
+import { weather } from '$lib/server/weather';
+import type { WeatherSnapshot } from '$lib/server/weather';
 import { createValidationError, type LoaderResult } from '$lib/types/errors';
-import { withGracefulFallback } from '$lib/utils/loader';
-import type { LocationInfo, Hazard, Station, Observation } from '$lib/types/domain';
+import type { LocationInfo, Hazard, Station, Observation, ForecastDay } from '$lib/types/domain';
 
 export const load: LayoutServerLoad = async ({
 	params,
@@ -20,6 +15,8 @@ export const load: LayoutServerLoad = async ({
 		hazards: Hazard[];
 		station: Station | null;
 		observation: Observation | null;
+		forecast: ForecastDay[];
+		errors: WeatherSnapshot['errors'];
 		pageTitle?: string;
 	}>
 > => {
@@ -47,49 +44,22 @@ export const load: LayoutServerLoad = async ({
 	}
 
 	try {
-		const location = await getLocationByPoint(latNum, lonNum);
-
-		// Fetch hazards/alerts for this location (gracefully fail)
-		const hazards = await withGracefulFallback(
-			() => getAlertsByPoint(latNum, lonNum),
-			[],
-			'Failed to fetch hazards'
-		);
-
-		// Fetch the observation station for this location (gracefully fail)
-		let station: Station | null = null;
-		let observation: Observation | null = null;
-
-		const stations = await withGracefulFallback(
-			() => getStationsByGridpoint(location.gridId, location.gridX, location.gridY),
-			[],
-			'Failed to fetch stations'
-		);
-
-		if (stations.length > 0) {
-			station = stations[0]; // Use the primary/closest station
-
-			// Fetch the latest observation from this station (gracefully fail)
-			observation = await withGracefulFallback(
-				() => getLatestObservation(station!.id),
-				null,
-				'Failed to fetch observation'
-			);
-		}
+		const snapshot = await weather.snapshot({ lat: latNum, lon: lonNum });
 
 		// Set caching headers for location data (changes rarely)
-		// Note: hazards change more frequently, but we'll cache conservatively
 		setHeaders({
 			'Cache-Control': 'public, max-age=300, stale-while-revalidate=600'
 		});
 
 		return {
 			data: {
-				location,
+				location: snapshot.location,
 				coords: params.coords,
-				hazards,
-				station,
-				observation
+				hazards: snapshot.hazards,
+				station: snapshot.stations[0] ?? null,
+				observation: snapshot.observation,
+				forecast: snapshot.forecast,
+				errors: snapshot.errors
 			}
 		};
 	} catch (err: unknown) {
