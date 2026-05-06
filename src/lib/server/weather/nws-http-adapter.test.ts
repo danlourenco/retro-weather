@@ -154,8 +154,7 @@ describe('NwsHttpProvider.snapshot', () => {
 	it('captures observation error and sets observation=null when observation fails', async () => {
 		const transport: Fetcher = async (url) => {
 			if (url.includes('/observations/latest')) return new Response('boom', { status: 500 });
-			if (url.includes('/alerts/active'))
-				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
+			if (url.includes('/alerts/active')) return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
 			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
 			if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
 			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
@@ -175,8 +174,7 @@ describe('NwsHttpProvider.snapshot', () => {
 		const transport: Fetcher = async (url) => {
 			if (url.includes('/observations/latest'))
 				return new Response(JSON.stringify(OBSERVATION_FIXTURE));
-			if (url.includes('/alerts/active'))
-				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
+			if (url.includes('/alerts/active')) return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
 			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
 			if (url.includes('/gridpoints/') && url.endsWith('/forecast'))
 				return new Response('nope', { status: 502 });

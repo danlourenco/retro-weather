@@ -1,4 +1,10 @@
-import type { PointsResponseSchema, StationsSchema, ObservationSchema, ForecastSchema, AlertsSchema } from '../nws-schemas';
+import type {
+	PointsResponseSchema,
+	StationsSchema,
+	ObservationSchema,
+	ForecastSchema,
+	AlertsSchema
+} from '../nws-schemas';
 import type { z } from 'zod';
 
 export const POINTS_FIXTURE: z.infer<typeof PointsResponseSchema> = {
@@ -82,11 +88,7 @@ export const ALERTS_FIXTURE: z.infer<typeof AlertsSchema> = {
  * Build a fake transport that maps URL substrings to canned JSON responses.
  * Matches the signature of fetchWithRetry from $lib/utils/http.
  */
-export type Fetcher = (
-	url: string,
-	options?: RequestInit,
-	retry?: unknown
-) => Promise<Response>;
+export type Fetcher = (url: string, options?: RequestInit, retry?: unknown) => Promise<Response>;
 
 export function fakeTransport(routes: Record<string, unknown>, status = 200): Fetcher {
 	return async (url) => {

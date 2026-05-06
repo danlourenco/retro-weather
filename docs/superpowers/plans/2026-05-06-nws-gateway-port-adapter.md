@@ -334,11 +334,7 @@ export const ALERTS_FIXTURE = {
  * Build a fake transport that maps URL substrings to canned JSON responses.
  * Matches the signature of fetchWithRetry from $lib/utils/http.
  */
-export type Fetcher = (
-	url: string,
-	options?: RequestInit,
-	retry?: unknown
-) => Promise<Response>;
+export type Fetcher = (url: string, options?: RequestInit, retry?: unknown) => Promise<Response>;
 
 export function fakeTransport(routes: Record<string, unknown>, status = 200): Fetcher {
 	return async (url) => {
@@ -444,19 +440,9 @@ import {
 	ObservationSchema,
 	AlertsSchema
 } from './nws-schemas';
-import {
-	mapPoints,
-	mapStations,
-	mapObservation,
-	mapForecast,
-	mapAlerts
-} from './nws-mappers';
+import { mapPoints, mapStations, mapObservation, mapForecast, mapAlerts } from './nws-mappers';
 
-type Fetcher = (
-	url: string,
-	options?: RequestInit,
-	retry?: RetryConfig
-) => Promise<Response>;
+type Fetcher = (url: string, options?: RequestInit, retry?: RetryConfig) => Promise<Response>;
 
 interface AdapterOpts {
 	transport?: Fetcher;
@@ -586,22 +572,22 @@ Expected: 3 hazards tests FAIL with "hazards not implemented". Existing 3 locati
 In `nws-http-adapter.ts`, replace the `hazards: notYet('hazards')` line and add the inner function (place next to `location`):
 
 ```ts
-	async function hazards(coords: Coords) {
-		const url = `${base}/alerts/active?point=${coords.lat.toFixed(4)},${coords.lon.toFixed(4)}`;
-		const dto = await getJson(transport, url, AlertsSchema, 'Alerts');
-		return mapAlerts(dto);
-	}
+async function hazards(coords: Coords) {
+	const url = `${base}/alerts/active?point=${coords.lat.toFixed(4)},${coords.lon.toFixed(4)}`;
+	const dto = await getJson(transport, url, AlertsSchema, 'Alerts');
+	return mapAlerts(dto);
+}
 ```
 
 Update the returned object to wire it in:
 
 ```ts
-	return {
-		location,
-		hazards,
-		snapshot: notYet('snapshot') as WeatherProvider['snapshot'],
-		forecast: notYet('forecast') as WeatherProvider['forecast']
-	};
+return {
+	location,
+	hazards,
+	snapshot: notYet('snapshot') as WeatherProvider['snapshot'],
+	forecast: notYet('forecast') as WeatherProvider['forecast']
+};
 ```
 
 - [ ] **Step 4: Run tests**
@@ -637,9 +623,7 @@ describe('NwsHttpProvider.forecast', () => {
 		const transport = fakeTransport({ '/gridpoints/': FORECAST_FIXTURE });
 		const provider = createNwsHttpProvider({ transport });
 
-		const result = await provider.forecast(
-			'https://api.weather.gov/gridpoints/OKX/33,35/forecast'
-		);
+		const result = await provider.forecast('https://api.weather.gov/gridpoints/OKX/33,35/forecast');
 
 		expect(result).toHaveLength(2);
 		expect(result[0]).toEqual({
@@ -695,21 +679,21 @@ Expected: 3 forecast tests FAIL with "forecast not implemented". 6 prior tests s
 In `nws-http-adapter.ts`, replace the `forecast: notYet('forecast')` line and add the inner function:
 
 ```ts
-	async function forecast(forecastUrl: string) {
-		const dto = await getJson(transport, forecastUrl, ForecastSchema, 'Forecast');
-		return mapForecast(dto);
-	}
+async function forecast(forecastUrl: string) {
+	const dto = await getJson(transport, forecastUrl, ForecastSchema, 'Forecast');
+	return mapForecast(dto);
+}
 ```
 
 Update the return:
 
 ```ts
-	return {
-		location,
-		hazards,
-		forecast,
-		snapshot: notYet('snapshot') as WeatherProvider['snapshot']
-	};
+return {
+	location,
+	hazards,
+	forecast,
+	snapshot: notYet('snapshot') as WeatherProvider['snapshot']
+};
 ```
 
 - [ ] **Step 4: Run tests**
@@ -738,11 +722,7 @@ git commit -m "feat(weather): implement NwsHttpProvider.forecast with boundary t
 Append to the test file:
 
 ```ts
-import {
-	STATIONS_FIXTURE,
-	OBSERVATION_FIXTURE,
-	STATIONS_EMPTY_FIXTURE
-} from './__fixtures__/nws';
+import { STATIONS_FIXTURE, OBSERVATION_FIXTURE, STATIONS_EMPTY_FIXTURE } from './__fixtures__/nws';
 
 describe('NwsHttpProvider.snapshot', () => {
 	it('returns full snapshot when all calls succeed', async () => {
@@ -780,67 +760,65 @@ Expected: snapshot test FAILs with "snapshot not implemented". 9 prior tests sti
 In `nws-http-adapter.ts`, add private helpers and replace `snapshot: notYet(...)`:
 
 ```ts
-	async function getStations(gridId: string, x: number, y: number) {
-		const url = `${base}/gridpoints/${gridId}/${x},${y}/stations`;
-		const dto = await getJson(transport, url, StationsSchema, 'Stations');
-		return mapStations(dto);
+async function getStations(gridId: string, x: number, y: number) {
+	const url = `${base}/gridpoints/${gridId}/${x},${y}/stations`;
+	const dto = await getJson(transport, url, StationsSchema, 'Stations');
+	return mapStations(dto);
+}
+
+async function getObservation(stationId: string) {
+	const url = `${base}/stations/${stationId}/observations/latest`;
+	const dto = await getJson(transport, url, ObservationSchema, 'Observation');
+	return mapObservation(dto);
+}
+
+async function snapshot(coords: Coords) {
+	const loc = await location(coords);
+	const stations = await getStations(loc.gridId, loc.gridX, loc.gridY);
+
+	const errors: WeatherSnapshot['errors'] = {};
+
+	const observationPromise =
+		stations.length === 0
+			? Promise.reject(createApiError('No observation stations available for this location'))
+			: getObservation(stations[0].id);
+
+	const [obsResult, forecastResult, hazardsResult] = await Promise.allSettled([
+		observationPromise,
+		forecast(loc.forecast),
+		hazards(coords)
+	]);
+
+	let observation: WeatherSnapshot['observation'] = null;
+	if (obsResult.status === 'fulfilled') {
+		observation = obsResult.value;
+	} else {
+		errors.observation = obsResult.reason;
 	}
 
-	async function getObservation(stationId: string) {
-		const url = `${base}/stations/${stationId}/observations/latest`;
-		const dto = await getJson(transport, url, ObservationSchema, 'Observation');
-		return mapObservation(dto);
+	let forecastDays: WeatherSnapshot['forecast'] = [];
+	if (forecastResult.status === 'fulfilled') {
+		forecastDays = forecastResult.value;
+	} else {
+		errors.forecast = forecastResult.reason;
 	}
 
-	async function snapshot(coords: Coords) {
-		const loc = await location(coords);
-		const stations = await getStations(loc.gridId, loc.gridX, loc.gridY);
-
-		const errors: WeatherSnapshot['errors'] = {};
-
-		const observationPromise =
-			stations.length === 0
-				? Promise.reject(
-						createApiError('No observation stations available for this location')
-					)
-				: getObservation(stations[0].id);
-
-		const [obsResult, forecastResult, hazardsResult] = await Promise.allSettled([
-			observationPromise,
-			forecast(loc.forecast),
-			hazards(coords)
-		]);
-
-		let observation: WeatherSnapshot['observation'] = null;
-		if (obsResult.status === 'fulfilled') {
-			observation = obsResult.value;
-		} else {
-			errors.observation = obsResult.reason;
-		}
-
-		let forecastDays: WeatherSnapshot['forecast'] = [];
-		if (forecastResult.status === 'fulfilled') {
-			forecastDays = forecastResult.value;
-		} else {
-			errors.forecast = forecastResult.reason;
-		}
-
-		let hazardsList: WeatherSnapshot['hazards'] = [];
-		if (hazardsResult.status === 'fulfilled') {
-			hazardsList = hazardsResult.value;
-		} else {
-			errors.hazards = hazardsResult.reason;
-		}
-
-		return {
-			location: loc,
-			stations,
-			observation,
-			forecast: forecastDays,
-			hazards: hazardsList,
-			errors
-		};
+	let hazardsList: WeatherSnapshot['hazards'] = [];
+	if (hazardsResult.status === 'fulfilled') {
+		hazardsList = hazardsResult.value;
+	} else {
+		errors.hazards = hazardsResult.reason;
 	}
+
+	return {
+		location: loc,
+		stations,
+		observation,
+		forecast: forecastDays,
+		hazards: hazardsList,
+		errors
+	};
+}
 ```
 
 Add the missing import at the top of the file:
@@ -854,7 +832,7 @@ import type { WeatherProvider, Coords, WeatherSnapshot } from './port';
 Update the return value:
 
 ```ts
-	return { location, hazards, forecast, snapshot };
+return { location, hazards, forecast, snapshot };
 ```
 
 Remove the now-unused `notYet` helper.
@@ -885,107 +863,105 @@ git commit -m "feat(weather): implement NwsHttpProvider.snapshot happy path"
 Append to `describe('NwsHttpProvider.snapshot', ...)`:
 
 ```ts
-	it('captures observation error and sets observation=null when observation fails', async () => {
-		const transport: Fetcher = async (url) => {
-			if (url.includes('/observations/latest')) return new Response('boom', { status: 500 });
-			if (url.includes('/alerts/active'))
-				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
-			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
-			if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
-			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
-			return new Response('unmocked', { status: 404 });
-		};
-		const provider = createNwsHttpProvider({ transport });
+it('captures observation error and sets observation=null when observation fails', async () => {
+	const transport: Fetcher = async (url) => {
+		if (url.includes('/observations/latest')) return new Response('boom', { status: 500 });
+		if (url.includes('/alerts/active')) return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
+		if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
+		if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
+		if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+		return new Response('unmocked', { status: 404 });
+	};
+	const provider = createNwsHttpProvider({ transport });
 
-		const snap = await provider.snapshot({ lat: 40, lon: -74 });
+	const snap = await provider.snapshot({ lat: 40, lon: -74 });
 
-		expect(snap.observation).toBeNull();
-		expect(snap.errors.observation).toMatchObject({ type: 'API_ERROR', statusCode: 500 });
-		expect(snap.forecast).toHaveLength(2);
-		expect(snap.errors.forecast).toBeUndefined();
+	expect(snap.observation).toBeNull();
+	expect(snap.errors.observation).toMatchObject({ type: 'API_ERROR', statusCode: 500 });
+	expect(snap.forecast).toHaveLength(2);
+	expect(snap.errors.forecast).toBeUndefined();
+});
+
+it('captures forecast error and sets forecast=[] when forecast fails', async () => {
+	const transport: Fetcher = async (url) => {
+		if (url.includes('/observations/latest'))
+			return new Response(JSON.stringify(OBSERVATION_FIXTURE));
+		if (url.includes('/alerts/active')) return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
+		if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
+		if (url.includes('/gridpoints/') && url.endsWith('/forecast'))
+			return new Response('nope', { status: 502 });
+		if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+		return new Response('unmocked', { status: 404 });
+	};
+	const provider = createNwsHttpProvider({ transport });
+
+	const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+	expect(snap.forecast).toEqual([]);
+	expect(snap.errors.forecast).toMatchObject({ type: 'API_ERROR', statusCode: 502 });
+	expect(snap.observation).not.toBeNull();
+});
+
+it('captures hazards error and sets hazards=[] when hazards fail', async () => {
+	const transport: Fetcher = async (url) => {
+		if (url.includes('/observations/latest'))
+			return new Response(JSON.stringify(OBSERVATION_FIXTURE));
+		if (url.includes('/alerts/active')) return new Response('nope', { status: 503 });
+		if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
+		if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
+		if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+		return new Response('unmocked', { status: 404 });
+	};
+	const provider = createNwsHttpProvider({ transport });
+
+	const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+	expect(snap.hazards).toEqual([]);
+	expect(snap.errors.hazards).toMatchObject({ type: 'API_ERROR', statusCode: 503 });
+});
+
+it('throws when location call fails', async () => {
+	const transport = fakeTransport({ '/points/': {} }, 500);
+	const provider = createNwsHttpProvider({ transport });
+
+	await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
+		type: 'API_ERROR',
+		statusCode: 500
 	});
+});
 
-	it('captures forecast error and sets forecast=[] when forecast fails', async () => {
-		const transport: Fetcher = async (url) => {
-			if (url.includes('/observations/latest'))
-				return new Response(JSON.stringify(OBSERVATION_FIXTURE));
-			if (url.includes('/alerts/active'))
-				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
-			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
-			if (url.includes('/gridpoints/') && url.endsWith('/forecast'))
-				return new Response('nope', { status: 502 });
-			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
-			return new Response('unmocked', { status: 404 });
-		};
-		const provider = createNwsHttpProvider({ transport });
+it('throws when stations call fails', async () => {
+	const transport: Fetcher = async (url) => {
+		if (url.includes('/stations')) return new Response('boom', { status: 500 });
+		if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+		return new Response('unmocked', { status: 404 });
+	};
+	const provider = createNwsHttpProvider({ transport });
 
-		const snap = await provider.snapshot({ lat: 40, lon: -74 });
-
-		expect(snap.forecast).toEqual([]);
-		expect(snap.errors.forecast).toMatchObject({ type: 'API_ERROR', statusCode: 502 });
-		expect(snap.observation).not.toBeNull();
+	await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
+		type: 'API_ERROR',
+		statusCode: 500
 	});
+});
 
-	it('captures hazards error and sets hazards=[] when hazards fail', async () => {
-		const transport: Fetcher = async (url) => {
-			if (url.includes('/observations/latest'))
-				return new Response(JSON.stringify(OBSERVATION_FIXTURE));
-			if (url.includes('/alerts/active')) return new Response('nope', { status: 503 });
-			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
-			if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
-			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
-			return new Response('unmocked', { status: 404 });
-		};
-		const provider = createNwsHttpProvider({ transport });
-
-		const snap = await provider.snapshot({ lat: 40, lon: -74 });
-
-		expect(snap.hazards).toEqual([]);
-		expect(snap.errors.hazards).toMatchObject({ type: 'API_ERROR', statusCode: 503 });
+it('returns observation=null with synthetic error when stations is empty', async () => {
+	const transport = fakeTransport({
+		'/alerts/active': ALERTS_EMPTY_FIXTURE,
+		'/stations': STATIONS_EMPTY_FIXTURE,
+		'/gridpoints/': FORECAST_FIXTURE,
+		'/points/': POINTS_FIXTURE
 	});
+	const provider = createNwsHttpProvider({ transport });
 
-	it('throws when location call fails', async () => {
-		const transport = fakeTransport({ '/points/': {} }, 500);
-		const provider = createNwsHttpProvider({ transport });
+	const snap = await provider.snapshot({ lat: 40, lon: -74 });
 
-		await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
-			type: 'API_ERROR',
-			statusCode: 500
-		});
+	expect(snap.observation).toBeNull();
+	expect(snap.errors.observation).toMatchObject({
+		type: 'API_ERROR',
+		message: expect.stringContaining('No observation stations')
 	});
-
-	it('throws when stations call fails', async () => {
-		const transport: Fetcher = async (url) => {
-			if (url.includes('/stations')) return new Response('boom', { status: 500 });
-			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
-			return new Response('unmocked', { status: 404 });
-		};
-		const provider = createNwsHttpProvider({ transport });
-
-		await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
-			type: 'API_ERROR',
-			statusCode: 500
-		});
-	});
-
-	it('returns observation=null with synthetic error when stations is empty', async () => {
-		const transport = fakeTransport({
-			'/alerts/active': ALERTS_EMPTY_FIXTURE,
-			'/stations': STATIONS_EMPTY_FIXTURE,
-			'/gridpoints/': FORECAST_FIXTURE,
-			'/points/': POINTS_FIXTURE
-		});
-		const provider = createNwsHttpProvider({ transport });
-
-		const snap = await provider.snapshot({ lat: 40, lon: -74 });
-
-		expect(snap.observation).toBeNull();
-		expect(snap.errors.observation).toMatchObject({
-			type: 'API_ERROR',
-			message: expect.stringContaining('No observation stations')
-		});
-		expect(snap.forecast).toHaveLength(2);
-	});
+	expect(snap.forecast).toHaveLength(2);
+});
 ```
 
 - [ ] **Step 2: Run tests**
@@ -1156,7 +1132,7 @@ If the existing file used additional imports (city/state lookup, etc.), retain t
 
 ```ts
 const snap = await weather.snapshot({ lat, lon });
-return { ...snap, /* other props */ };
+return { ...snap /* other props */ };
 ```
 
 - [ ] **Step 3: Type-check**
@@ -1490,24 +1466,24 @@ Closes #6.
 
 **Spec coverage** (issue #6 requirements):
 
-| Requirement | Task |
-|---|---|
-| `WeatherProvider` port in domain terms | Task 1 |
-| HTTP adapter contains fetch ritual privately | Tasks 5–9 |
-| In-memory adapter for tests | Task 10 |
-| Default singleton | Task 11 |
-| `snapshot()` is the primary entry | Task 8 |
-| Snapshot escape hatches: `location`, `forecast`, `hazards` | Tasks 5, 6, 7 |
-| Partial-failure semantics with `errors` map | Task 9 |
-| Empty-stations handling | Task 9 |
-| Migrate `+layout.server.ts` | Task 12 |
-| Migrate `current-conditions/+page.server.ts` | Task 13 |
-| Migrate `extended-forecast/+page.server.ts` | Task 14 |
-| Migrate `local-forecast/+page.server.ts` | Task 15 |
-| Delete `services/nws.ts`, `validators/nws.ts`, `mappers/nws.ts`, `types/nws.ts` (and their tests) | Task 16 |
-| Delete unused `generated/nws.ts` | Task 17 |
-| Boundary tests cover validation failure, non-2xx, schema mismatch | Tasks 5, 6, 7, 8, 9 |
-| Forecast URL round-trip integrity | Task 7 |
+| Requirement                                                                                       | Task                |
+| ------------------------------------------------------------------------------------------------- | ------------------- |
+| `WeatherProvider` port in domain terms                                                            | Task 1              |
+| HTTP adapter contains fetch ritual privately                                                      | Tasks 5–9           |
+| In-memory adapter for tests                                                                       | Task 10             |
+| Default singleton                                                                                 | Task 11             |
+| `snapshot()` is the primary entry                                                                 | Task 8              |
+| Snapshot escape hatches: `location`, `forecast`, `hazards`                                        | Tasks 5, 6, 7       |
+| Partial-failure semantics with `errors` map                                                       | Task 9              |
+| Empty-stations handling                                                                           | Task 9              |
+| Migrate `+layout.server.ts`                                                                       | Task 12             |
+| Migrate `current-conditions/+page.server.ts`                                                      | Task 13             |
+| Migrate `extended-forecast/+page.server.ts`                                                       | Task 14             |
+| Migrate `local-forecast/+page.server.ts`                                                          | Task 15             |
+| Delete `services/nws.ts`, `validators/nws.ts`, `mappers/nws.ts`, `types/nws.ts` (and their tests) | Task 16             |
+| Delete unused `generated/nws.ts`                                                                  | Task 17             |
+| Boundary tests cover validation failure, non-2xx, schema mismatch                                 | Tasks 5, 6, 7, 8, 9 |
+| Forecast URL round-trip integrity                                                                 | Task 7              |
 
 All requirements mapped to tasks.
 

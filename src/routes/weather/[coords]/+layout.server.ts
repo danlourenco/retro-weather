@@ -2,13 +2,7 @@ import type { LayoutServerLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import { weather } from '$lib/server/weather';
 import { createValidationError, type LoaderResult } from '$lib/types/errors';
-import type {
-	LocationInfo,
-	Hazard,
-	Station,
-	Observation,
-	ForecastDay
-} from '$lib/types/domain';
+import type { LocationInfo, Hazard, Station, Observation, ForecastDay } from '$lib/types/domain';
 
 export const load: LayoutServerLoad = async ({
 	params,
