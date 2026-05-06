@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { createNwsHttpProvider } from './nws-http-adapter';
-import { fakeTransport, POINTS_FIXTURE, ALERTS_FIXTURE, ALERTS_EMPTY_FIXTURE } from './__fixtures__/nws';
+import {
+	fakeTransport,
+	type Fetcher,
+	POINTS_FIXTURE,
+	ALERTS_FIXTURE,
+	ALERTS_EMPTY_FIXTURE,
+	FORECAST_FIXTURE
+} from './__fixtures__/nws';
 
 describe('NwsHttpProvider.location', () => {
 	it('returns mapped LocationInfo for valid coords', async () => {
@@ -74,5 +81,49 @@ describe('NwsHttpProvider.hazards', () => {
 			type: 'API_ERROR',
 			statusCode: 500
 		});
+	});
+});
+
+describe('NwsHttpProvider.forecast', () => {
+	it('returns mapped ForecastDay[] for the given URL', async () => {
+		const transport = fakeTransport({ '/gridpoints/': FORECAST_FIXTURE });
+		const provider = createNwsHttpProvider({ transport });
+
+		const result = await provider.forecast(
+			'https://api.weather.gov/gridpoints/OKX/33,35/forecast'
+		);
+
+		expect(result).toHaveLength(2);
+		expect(result[0]).toEqual({
+			dayName: 'Today',
+			startTime: '2026-05-06T06:00:00-04:00',
+			isDaytime: true,
+			temperature: 72,
+			shortForecast: 'Sunny',
+			detailedForecast: 'Sunny, with a high near 72.',
+			icon: 'https://api.weather.gov/icons/land/day/few?size=medium'
+		});
+	});
+
+	it('passes the forecast URL through unchanged (round-trip)', async () => {
+		const seen: string[] = [];
+		const transport: Fetcher = async (url) => {
+			seen.push(url);
+			return new Response(JSON.stringify(FORECAST_FIXTURE), { status: 200 });
+		};
+		const provider = createNwsHttpProvider({ transport });
+
+		await provider.forecast('https://example.test/some/forecast/url');
+
+		expect(seen).toEqual(['https://example.test/some/forecast/url']);
+	});
+
+	it('throws WeatherError on non-2xx response', async () => {
+		const transport = fakeTransport({ '/forecast': {} }, 502);
+		const provider = createNwsHttpProvider({ transport });
+
+		await expect(
+			provider.forecast('https://api.weather.gov/gridpoints/OKX/33,35/forecast')
+		).rejects.toMatchObject({ type: 'API_ERROR', statusCode: 502 });
 	});
 });

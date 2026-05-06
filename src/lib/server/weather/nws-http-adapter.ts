@@ -58,6 +58,11 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 		return mapAlerts(dto);
 	}
 
+	async function forecast(forecastUrl: string) {
+		const dto = await getJson(transport, forecastUrl, ForecastSchema, 'Forecast');
+		return mapForecast(dto);
+	}
+
 	// Stubs for the rest of the port — implemented in later tasks.
 	const notYet = (name: string) => async () => {
 		throw new Error(`${name} not implemented`);
@@ -66,7 +71,7 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 	return {
 		location,
 		hazards,
-		snapshot: notYet('snapshot') as WeatherProvider['snapshot'],
-		forecast: notYet('forecast') as WeatherProvider['forecast']
+		forecast,
+		snapshot: notYet('snapshot') as WeatherProvider['snapshot']
 	};
 }
