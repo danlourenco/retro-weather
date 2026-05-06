@@ -1,5 +1,4 @@
 import type { PageServerLoad } from './$types';
-import { getForecastByUrl } from '$lib/services/nws';
 import { ErrorType, type LoaderResult } from '$lib/types/errors';
 import type { ForecastDay } from '$lib/types/domain';
 
@@ -9,7 +8,9 @@ interface LocalForecastData {
 	pageTitle: string;
 }
 
-export const load: PageServerLoad = async ({ parent }): Promise<LoaderResult<LocalForecastData>> => {
+export const load: PageServerLoad = async ({
+	parent
+}): Promise<LoaderResult<LocalForecastData>> => {
 	const parentData = await parent();
 
 	if (!parentData.data?.location?.forecast) {
@@ -23,27 +24,13 @@ export const load: PageServerLoad = async ({ parent }): Promise<LoaderResult<Loc
 		};
 	}
 
-	const { location, coords } = parentData.data;
+	const { forecast, coords } = parentData.data;
 
-	try {
-		const forecasts = await getForecastByUrl(location.forecast);
-
-		return {
-			data: {
-				forecasts,
-				coords,
-				pageTitle: 'Local Forecast'
-			}
-		};
-	} catch (err: unknown) {
-		console.error('Failed to load forecast data:', err);
-		return {
-			data: null,
-			error: {
-				type: ErrorType.API_ERROR,
-				message: 'Failed to load forecast data',
-				retryable: true
-			}
-		};
-	}
+	return {
+		data: {
+			forecasts: forecast,
+			coords,
+			pageTitle: 'Local Forecast'
+		}
+	};
 };
