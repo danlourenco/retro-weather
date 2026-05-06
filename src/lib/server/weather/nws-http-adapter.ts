@@ -52,6 +52,12 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 		return mapPoints(dto);
 	}
 
+	async function hazards(coords: Coords) {
+		const url = `${base}/alerts/active?point=${coords.lat.toFixed(4)},${coords.lon.toFixed(4)}`;
+		const dto = await getJson(transport, url, AlertsSchema, 'Alerts');
+		return mapAlerts(dto);
+	}
+
 	// Stubs for the rest of the port — implemented in later tasks.
 	const notYet = (name: string) => async () => {
 		throw new Error(`${name} not implemented`);
@@ -59,8 +65,8 @@ export function createNwsHttpProvider(opts: AdapterOpts = {}): WeatherProvider {
 
 	return {
 		location,
+		hazards,
 		snapshot: notYet('snapshot') as WeatherProvider['snapshot'],
-		forecast: notYet('forecast') as WeatherProvider['forecast'],
-		hazards: notYet('hazards') as WeatherProvider['hazards']
+		forecast: notYet('forecast') as WeatherProvider['forecast']
 	};
 }
