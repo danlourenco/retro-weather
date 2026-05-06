@@ -150,4 +150,106 @@ describe('NwsHttpProvider.snapshot', () => {
 		expect(snap.hazards).toHaveLength(1);
 		expect(snap.errors).toEqual({});
 	});
+
+	it('captures observation error and sets observation=null when observation fails', async () => {
+		const transport: Fetcher = async (url) => {
+			if (url.includes('/observations/latest')) return new Response('boom', { status: 500 });
+			if (url.includes('/alerts/active'))
+				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
+			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
+			if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
+			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+			return new Response('unmocked', { status: 404 });
+		};
+		const provider = createNwsHttpProvider({ transport });
+
+		const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+		expect(snap.observation).toBeNull();
+		expect(snap.errors.observation).toMatchObject({ type: 'API_ERROR', statusCode: 500 });
+		expect(snap.forecast).toHaveLength(2);
+		expect(snap.errors.forecast).toBeUndefined();
+	});
+
+	it('captures forecast error and sets forecast=[] when forecast fails', async () => {
+		const transport: Fetcher = async (url) => {
+			if (url.includes('/observations/latest'))
+				return new Response(JSON.stringify(OBSERVATION_FIXTURE));
+			if (url.includes('/alerts/active'))
+				return new Response(JSON.stringify(ALERTS_EMPTY_FIXTURE));
+			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
+			if (url.includes('/gridpoints/') && url.endsWith('/forecast'))
+				return new Response('nope', { status: 502 });
+			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+			return new Response('unmocked', { status: 404 });
+		};
+		const provider = createNwsHttpProvider({ transport });
+
+		const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+		expect(snap.forecast).toEqual([]);
+		expect(snap.errors.forecast).toMatchObject({ type: 'API_ERROR', statusCode: 502 });
+		expect(snap.observation).not.toBeNull();
+	});
+
+	it('captures hazards error and sets hazards=[] when hazards fail', async () => {
+		const transport: Fetcher = async (url) => {
+			if (url.includes('/observations/latest'))
+				return new Response(JSON.stringify(OBSERVATION_FIXTURE));
+			if (url.includes('/alerts/active')) return new Response('nope', { status: 503 });
+			if (url.includes('/stations')) return new Response(JSON.stringify(STATIONS_FIXTURE));
+			if (url.includes('/gridpoints/')) return new Response(JSON.stringify(FORECAST_FIXTURE));
+			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+			return new Response('unmocked', { status: 404 });
+		};
+		const provider = createNwsHttpProvider({ transport });
+
+		const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+		expect(snap.hazards).toEqual([]);
+		expect(snap.errors.hazards).toMatchObject({ type: 'API_ERROR', statusCode: 503 });
+	});
+
+	it('throws when location call fails', async () => {
+		const transport = fakeTransport({ '/points/': {} }, 500);
+		const provider = createNwsHttpProvider({ transport });
+
+		await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
+			type: 'API_ERROR',
+			statusCode: 500
+		});
+	});
+
+	it('throws when stations call fails', async () => {
+		const transport: Fetcher = async (url) => {
+			if (url.includes('/stations')) return new Response('boom', { status: 500 });
+			if (url.includes('/points/')) return new Response(JSON.stringify(POINTS_FIXTURE));
+			return new Response('unmocked', { status: 404 });
+		};
+		const provider = createNwsHttpProvider({ transport });
+
+		await expect(provider.snapshot({ lat: 40, lon: -74 })).rejects.toMatchObject({
+			type: 'API_ERROR',
+			statusCode: 500
+		});
+	});
+
+	it('returns observation=null with synthetic error when stations is empty', async () => {
+		const transport = fakeTransport({
+			'/alerts/active': ALERTS_EMPTY_FIXTURE,
+			'/stations': STATIONS_EMPTY_FIXTURE,
+			'/gridpoints/': FORECAST_FIXTURE,
+			'/points/': POINTS_FIXTURE
+		});
+		const provider = createNwsHttpProvider({ transport });
+
+		const snap = await provider.snapshot({ lat: 40, lon: -74 });
+
+		expect(snap.observation).toBeNull();
+		expect(snap.errors.observation).toMatchObject({
+			type: 'API_ERROR',
+			message: expect.stringContaining('No observation stations')
+		});
+		expect(snap.forecast).toHaveLength(2);
+	});
 });
